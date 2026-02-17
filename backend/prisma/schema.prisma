@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
+enum VisaStatus {
+  EMPLOYMENT_VISA
+  OWN_VISA
+  SPOUSE_VISA
+  FREELANCE_PERMIT
+  VISIT_VISA
+  CANCELLED_VISA
+}
+
+enum Emirate {
+  DUBAI
+  ABU_DHABI
+  SHARJAH
+  AJMAN
+  RAS_AL_KHAIMAH
+  FUJAIRAH
+  UMM_AL_QUWAIN
+}
+
+enum AvailabilityStatus {
+  IMMEDIATE
+  ONE_MONTH
+  TWO_TO_THREE_MONTHS
+  NOT_LOOKING
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          UserRole
+  emailVerified Boolean   @default(false) @map("email_verified")
+
+  verificationToken String?   @map("verification_token")
+  resetToken        String?   @map("reset_token")
+  resetTokenExpiry  DateTime? @map("reset_token_expiry")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  candidate     Candidate?
+  employer      Employer?
+
+  @@map("users")
+}
+
+model Candidate {
+  id                String              @id @default(uuid())
+  userId            String              @unique @map("user_id")
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName          String              @map("full_name")
+  phone             String?
+  visaStatus        VisaStatus          @map("visa_status")
+  currentEmirate    Emirate             @map("current_emirate")
+  jobTitle          String?             @map("job_title")
+  totalExperience   Int?                @map("total_experience_years")
+  salaryMin         Int?                @map("salary_min")
+  salaryMax         Int?                @map("salary_max")
+  availabilityStatus AvailabilityStatus @map("availability_status")
+  cvUrl             String?             @map("cv_url")
+  profileVisible    Boolean             @default(true) @map("profile_visible")
+  profileSlug       String?             @unique @map("profile_slug")
+  completenessScore Int                 @default(0) @map("completeness_score")
+
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@map("candidates")
+}
+
+model Employer {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName String    @map("company_name")
+  industry    String?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  subscription Subscription?
+
+  @@map("employers")
+}
+
+model Subscription {
+  id                    String              @id @default(uuid())
+  employerId            String              @unique @map("employer_id")
+  employer              Employer            @relation(fields: [employerId], references: [id], onDelete: Cascade)
+
+  planType              SubscriptionPlan    @map("plan_type")
+  status                SubscriptionStatus
+
+  currentPeriodStart    DateTime            @map("current_period_start")
+  currentPeriodEnd      DateTime            @map("current_period_end")
+
+  cvDownloadsLimit      Int                 @map("cv_downloads_limit")
+  cvDownloadsUsed       Int                 @default(0) @map("cv_downloads_used")
+
+  createdAt             DateTime            @default(now()) @map("created_at")
+
+  @@map("subscriptions")
+}

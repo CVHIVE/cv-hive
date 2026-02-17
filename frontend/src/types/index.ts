@@ -1,0 +1,143 @@
+// ── Enums ──────────────────────────────────────────────
+export type UserRole = 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
+
+export type VisaStatus =
+  | 'EMPLOYMENT_VISA'
+  | 'OWN_VISA'
+  | 'SPOUSE_VISA'
+  | 'FREELANCE_PERMIT'
+  | 'VISIT_VISA'
+  | 'CANCELLED_VISA';
+
+export type Emirate =
+  | 'DUBAI'
+  | 'ABU_DHABI'
+  | 'SHARJAH'
+  | 'AJMAN'
+  | 'RAS_AL_KHAIMAH'
+  | 'FUJAIRAH'
+  | 'UMM_AL_QUWAIN';
+
+export type AvailabilityStatus =
+  | 'IMMEDIATE'
+  | 'ONE_MONTH'
+  | 'TWO_TO_THREE_MONTHS'
+  | 'NOT_LOOKING';
+
+export type SubscriptionPlan = 'BASIC' | 'PROFESSIONAL' | 'ENTERPRISE';
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';
+
+// ── Models ─────────────────────────────────────────────
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  email_verified?: boolean;
+  created_at?: string;
+}
+
+export interface Candidate {
+  id: string;
+  user_id: string;
+  email?: string;
+  full_name: string;
+  phone?: string;
+  visa_status: VisaStatus;
+  current_emirate: Emirate;
+  job_title?: string;
+  total_experience_years?: number;
+  salary_min?: number;
+  salary_max?: number;
+  availability_status: AvailabilityStatus;
+  cv_url?: string;
+  profile_visible: boolean;
+  profile_slug: string;
+  completeness_score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Employer {
+  id: string;
+  user_id: string;
+  email?: string;
+  company_name: string;
+  industry?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Auth ───────────────────────────────────────────────
+export interface AuthResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface MeResponse extends User {
+  candidate?: Candidate | null;
+  employer?: Employer | null;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  role: UserRole;
+  fullName?: string;
+  companyName?: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+// ── Candidates ─────────────────────────────────────────
+export interface UpdateCandidatePayload {
+  fullName?: string;
+  phone?: string;
+  visaStatus?: VisaStatus;
+  currentEmirate?: Emirate;
+  jobTitle?: string;
+  totalExperience?: number;
+  salaryMin?: number;
+  salaryMax?: number;
+  availabilityStatus?: AvailabilityStatus;
+  profileVisible?: boolean;
+}
+
+export interface CandidateSearchFilters {
+  emirate?: Emirate;
+  visaStatus?: VisaStatus;
+  jobTitle?: string;
+  availability?: AvailabilityStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface CandidateSearchResult {
+  id: string;
+  full_name: string;
+  job_title?: string;
+  current_emirate: Emirate;
+  visa_status: VisaStatus;
+  total_experience_years?: number;
+  availability_status: AvailabilityStatus;
+  profile_slug: string;
+}
+
+export interface PaginatedCandidates {
+  candidates: CandidateSearchResult[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+// ── Employers ──────────────────────────────────────────
+export interface UpdateEmployerPayload {
+  companyName?: string;
+  industry?: string;
+}
