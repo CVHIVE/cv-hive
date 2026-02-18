@@ -3,6 +3,8 @@ import { hashPassword, comparePassword } from '../../utils/password';
 import { generateAccessToken, generateRefreshToken } from '../../utils/tokens';
 import { v4 as uuidv4 } from 'uuid';
 import slugify from 'slugify';
+import crypto from 'crypto';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/email.service';
 
 interface RegisterData {
   email: string;
@@ -23,9 +25,16 @@ export const register = async (data: RegisterData) => {
   const passwordHash = await hashPassword(password);
   const userId = uuidv4();
 
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
   await db.query(
-    'INSERT INTO users (id, email, password_hash, role) VALUES ($1, $2, $3, $4)',
-    [userId, email, passwordHash, role]
+    'INSERT INTO users (id, email, password_hash, role, verification_token) VALUES ($1, $2, $3, $4, $5)',
+    [userId, email, passwordHash, role, verificationToken]
+  );
+
+  // Send verification email (non-blocking)
+  sendVerificationEmail(email, verificationToken, userId).catch((err) =>
+    console.error('Failed to send verification email:', err.message)
   );
 
   if (role === 'CANDIDATE') {
@@ -91,4 +100,59 @@ export const getMe = async (userId: string) => {
   }
 
   return user;
+};
+
+export const verifyEmail = async (token: string) => {
+  const result = await db.query(
+    'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING id, email',
+    [token]
+  );
+  if (result.rows.length === 0) throw new Error('Invalid or expired verification token');
+  return result.rows[0];
+};
+
+export const resendVerification = async (userId: string) => {
+  const user = await db.query('SELECT id, email, email_verified FROM users WHERE id = $1', [userId]);
+  if (user.rows.length === 0) throw new Error('User not found');
+  if (user.rows[0].email_verified) throw new Error('Email already verified');
+
+  const token = crypto.randomBytes(32).toString('hex');
+  await db.query('UPDATE users SET verification_token = $1 WHERE id = $2', [token, userId]);
+  await sendVerificationEmail(user.rows[0].email, token, userId);
+  return { message: 'Verification email sent' };
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const result = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+  if (result.rows.length === 0) {
+    // Don't reveal that email doesn't exist
+    return { message: 'If an account with that email exists, a password reset link has been sent.' };
+  }
+
+  const userId = result.rows[0].id;
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await db.query(
+    'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3',
+    [token, expiry, userId]
+  );
+
+  await sendPasswordResetEmail(email, token, userId);
+  return { message: 'If an account with that email exists, a password reset link has been sent.' };
+};
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  const result = await db.query(
+    'SELECT id FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW()',
+    [token]
+  );
+  if (result.rows.length === 0) throw new Error('Invalid or expired reset token');
+
+  const passwordHash = await hashPassword(newPassword);
+  await db.query(
+    'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
+    [passwordHash, result.rows[0].id]
+  );
+  return { message: 'Password reset successfully' };
 };

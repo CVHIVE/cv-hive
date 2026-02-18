@@ -13,4 +13,16 @@ export const authService = {
 
   logout: () =>
     api.post('/auth/logout').then((r) => r.data),
+
+  verifyEmail: (token: string) =>
+    api.post('/auth/verify-email', { token }).then((r) => r.data),
+
+  resendVerification: () =>
+    api.post('/auth/resend-verification').then((r) => r.data),
+
+  forgotPassword: (email: string) =>
+    api.post('/auth/forgot-password', { email }).then((r) => r.data),
+
+  resetPassword: (token: string, password: string) =>
+    api.post('/auth/reset-password', { token, password }).then((r) => r.data),
 };

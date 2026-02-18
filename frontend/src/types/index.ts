@@ -24,6 +24,26 @@ export type AvailabilityStatus =
   | 'TWO_TO_THREE_MONTHS'
   | 'NOT_LOOKING';
 
+export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'FREELANCE' | 'INTERNSHIP';
+export type JobStatus = 'ACTIVE' | 'CLOSED' | 'DRAFT';
+
+export type Industry =
+  | 'Technology'
+  | 'Finance & Banking'
+  | 'Healthcare'
+  | 'Construction & Engineering'
+  | 'Hospitality & Tourism'
+  | 'Education'
+  | 'Marketing & Advertising'
+  | 'Real Estate'
+  | 'Oil & Gas'
+  | 'Retail'
+  | 'Legal'
+  | 'HR & Recruitment'
+  | 'Logistics & Supply Chain'
+  | 'Media & Communications'
+  | 'Government';
+
 export type SubscriptionPlan = 'BASIC' | 'PROFESSIONAL' | 'ENTERPRISE';
 export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';
 
@@ -140,4 +160,87 @@ export interface PaginatedCandidates {
 export interface UpdateEmployerPayload {
   companyName?: string;
   industry?: string;
+}
+
+// ── Jobs ──────────────────────────────────────────────
+export interface Job {
+  id: string;
+  employer_id: string;
+  title: string;
+  description: string;
+  industry: string;
+  job_type: JobType;
+  emirate: Emirate;
+  salary_min?: number;
+  salary_max?: number;
+  salary_hidden?: boolean;
+  experience_min?: number;
+  experience_max?: number;
+  skills?: string;
+  status: JobStatus;
+  views_count: number;
+  applications_count: number;
+  company_name?: string;
+  employer_email?: string;
+  company_industry?: string;
+  created_at: string;
+  updated_at: string;
+  expires_at?: string;
+}
+
+export interface JobSearchFilters {
+  title?: string;
+  industry?: string;
+  emirate?: Emirate;
+  jobType?: JobType;
+  salaryMin?: number;
+  experienceMax?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedJobs {
+  jobs: Job[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface JobApplication {
+  id: string;
+  job_id: string;
+  candidate_id: string;
+  status: string;
+  cover_letter?: string;
+  applied_at: string;
+  // From joins
+  job_title?: string;
+  emirate?: string;
+  job_type?: string;
+  job_status?: string;
+  company_name?: string;
+  full_name?: string;
+  cv_url?: string;
+  total_experience_years?: number;
+  current_emirate?: string;
+  visa_status?: string;
+  email?: string;
+}
+
+export interface CreateJobPayload {
+  title: string;
+  description: string;
+  industry: string;
+  jobType: JobType;
+  emirate: Emirate;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryHidden?: boolean;
+  experienceMin?: number;
+  experienceMax?: number;
+  skills?: string;
+  status?: JobStatus;
 }

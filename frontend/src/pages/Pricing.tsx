@@ -1,10 +1,16 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { useAuthStore } from '../store/authStore';
+import { subscriptionService } from '../services/subscriptions';
+import toast from 'react-hot-toast';
 
 const plans = [
   {
     name: 'Basic',
+    key: 'BASIC',
     price: 'Free',
     period: '',
     description: 'For small businesses getting started',
@@ -19,6 +25,7 @@ const plans = [
   },
   {
     name: 'Professional',
+    key: 'PROFESSIONAL',
     price: 'AED 499',
     period: '/month',
     description: 'For growing companies hiring regularly',
@@ -30,11 +37,12 @@ const plans = [
       'Priority support',
       'Company profile listing',
     ],
-    cta: 'Start Free Trial',
+    cta: 'Subscribe',
     highlighted: true,
   },
   {
     name: 'Enterprise',
+    key: 'ENTERPRISE',
     price: 'AED 1,499',
     period: '/month',
     description: 'For large organizations with high-volume hiring',
@@ -47,12 +55,48 @@ const plans = [
       'Bulk candidate export',
       'SLA guarantee',
     ],
-    cta: 'Contact Sales',
+    cta: 'Subscribe',
     highlighted: false,
   },
 ];
 
 export default function Pricing() {
+  const { isAuthenticated, user } = useAuthStore();
+  const isEmployer = isAuthenticated && user?.role === 'EMPLOYER';
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription-status'],
+    queryFn: () => subscriptionService.getStatus(),
+    enabled: isEmployer,
+  });
+
+  const handleSubscribe = async (planKey: string) => {
+    if (!isAuthenticated) {
+      toast.error('Please log in as an employer to subscribe');
+      return;
+    }
+    if (user?.role !== 'EMPLOYER') {
+      toast.error('Subscriptions are for employer accounts');
+      return;
+    }
+    if (planKey === 'BASIC') return;
+
+    setLoadingPlan(planKey);
+    try {
+      const result = await subscriptionService.createCheckout(planKey);
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to start checkout');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
+  const currentPlan = subscription?.plan_type || 'BASIC';
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -69,53 +113,80 @@ export default function Pricing() {
       <section className="py-16 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-2xl p-8 flex flex-col ${
-                  plan.highlighted
-                    ? 'bg-blue-600 text-white shadow-xl scale-105'
-                    : 'bg-white border border-gray-200 shadow-sm'
-                }`}
-              >
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className={`text-sm mb-4 ${plan.highlighted ? 'text-blue-100' : 'text-gray-500'}`}>
-                  {plan.description}
-                </p>
+            {plans.map((plan) => {
+              const isCurrent = isEmployer && currentPlan === plan.key;
+              return (
+                <div
+                  key={plan.name}
+                  className={`rounded-2xl p-8 flex flex-col relative ${
+                    plan.highlighted
+                      ? 'bg-blue-600 text-white shadow-xl scale-105'
+                      : 'bg-white border border-gray-200 shadow-sm'
+                  }`}
+                >
+                  {isCurrent && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                      Current Plan
+                    </div>
+                  )}
 
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  {plan.period && (
-                    <span className={`text-sm ${plan.highlighted ? 'text-blue-200' : 'text-gray-500'}`}>
-                      {plan.period}
-                    </span>
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <p className={`text-sm mb-4 ${plan.highlighted ? 'text-blue-100' : 'text-gray-500'}`}>
+                    {plan.description}
+                  </p>
+
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold">{plan.price}</span>
+                    {plan.period && (
+                      <span className={`text-sm ${plan.highlighted ? 'text-blue-200' : 'text-gray-500'}`}>
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start">
+                        <span className={`mr-2 ${plan.highlighted ? 'text-blue-200' : 'text-green-500'}`}>
+                          &#10003;
+                        </span>
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isCurrent ? (
+                    <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-600 cursor-not-allowed">
+                      Current Plan
+                    </button>
+                  ) : isEmployer && plan.key !== 'BASIC' ? (
+                    <button
+                      onClick={() => handleSubscribe(plan.key)}
+                      disabled={loadingPlan === plan.key}
+                      className={`w-full py-3 rounded-lg font-semibold transition ${
+                        plan.highlighted
+                          ? 'bg-white text-blue-600 hover:bg-gray-100'
+                          : 'btn btn-primary'
+                      }`}
+                    >
+                      {loadingPlan === plan.key ? 'Redirecting...' : plan.cta}
+                    </button>
+                  ) : (
+                    <Link to="/signup">
+                      <button
+                        className={`w-full py-3 rounded-lg font-semibold transition ${
+                          plan.highlighted
+                            ? 'bg-white text-blue-600 hover:bg-gray-100'
+                            : 'btn btn-primary'
+                        }`}
+                      >
+                        {plan.key === 'BASIC' ? 'Get Started' : plan.cta}
+                      </button>
+                    </Link>
                   )}
                 </div>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start">
-                      <span className={`mr-2 ${plan.highlighted ? 'text-blue-200' : 'text-green-500'}`}>
-                        &#10003;
-                      </span>
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link to="/signup">
-                  <button
-                    className={`w-full py-3 rounded-lg font-semibold transition ${
-                      plan.highlighted
-                        ? 'bg-white text-blue-600 hover:bg-gray-100'
-                        : 'btn btn-primary'
-                    }`}
-                  >
-                    {plan.cta}
-                  </button>
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Job seekers note */}

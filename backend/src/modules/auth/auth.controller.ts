@@ -56,3 +56,40 @@ export const logout = (req: Request, res: Response) => {
     message: 'Logout successful',
   });
 };
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.verifyEmail(req.body.token);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const resendVerification = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const result = await authService.resendVerification(userId);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.requestPasswordReset(req.body.email);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.resetPassword(req.body.token, req.body.password);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};

@@ -1,4 +1,5 @@
 import db from '../../config/database';
+import slugify from 'slugify';
 
 export const getProfile = async (userId: string) => {
   const result = await db.query(
@@ -14,8 +15,25 @@ export const updateProfile = async (userId: string, data: any) => {
   const values: any[] = [];
   let idx = 1;
 
-  if (data.companyName) { fields.push(`company_name = $${idx}`); values.push(data.companyName); idx++; }
-  if (data.industry) { fields.push(`industry = $${idx}`); values.push(data.industry); idx++; }
+  const map: Record<string, string> = {
+    companyName: 'company_name', industry: 'industry', description: 'description',
+    website: 'website', companySize: 'company_size', foundedYear: 'founded_year',
+    location: 'location',
+  };
+
+  for (const [key, col] of Object.entries(map)) {
+    if (data[key] !== undefined) {
+      fields.push(`${col} = $${idx++}`);
+      values.push(data[key]);
+    }
+  }
+
+  // Auto-generate slug from company name if name is being updated
+  if (data.companyName) {
+    const slug = slugify(data.companyName, { lower: true, strict: true });
+    fields.push(`company_slug = $${idx++}`);
+    values.push(slug);
+  }
 
   if (fields.length === 0) throw new Error('No fields to update');
 
@@ -27,4 +45,39 @@ export const updateProfile = async (userId: string, data: any) => {
     values
   );
   return result.rows[0];
+};
+
+export const updateLogo = async (userId: string, logoUrl: string) => {
+  const result = await db.query(
+    'UPDATE employers SET company_logo_url = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *',
+    [logoUrl, userId]
+  );
+  if (result.rows.length === 0) throw new Error('Employer not found');
+  return result.rows[0];
+};
+
+export const getPublicProfile = async (slug: string) => {
+  const result = await db.query(
+    `SELECT e.company_name, e.industry, e.company_logo_url, e.company_slug, e.description,
+            e.website, e.company_size, e.founded_year, e.location, e.created_at
+     FROM employers e
+     WHERE e.company_slug = $1`,
+    [slug]
+  );
+  if (result.rows.length === 0) throw new Error('Company not found');
+
+  const employer = result.rows[0];
+
+  // Get active jobs
+  const jobs = await db.query(
+    `SELECT j.id, j.title, j.industry, j.job_type, j.emirate, j.salary_min, j.salary_max,
+            j.salary_hidden, j.created_at
+     FROM jobs j
+     JOIN employers e ON e.id = j.employer_id
+     WHERE e.company_slug = $1 AND j.status = 'ACTIVE'
+     ORDER BY j.created_at DESC`,
+    [slug]
+  );
+
+  return { ...employer, jobs: jobs.rows };
 };

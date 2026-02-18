@@ -16,12 +16,24 @@ export default function Header() {
 
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
+            <Link to="/jobs" className="text-gray-600 hover:text-gray-900">Find Jobs</Link>
             <Link to="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
             {isAuthenticated && user?.role === 'EMPLOYER' && (
-              <Link to="/search" className="text-gray-600 hover:text-gray-900">Search Candidates</Link>
+              <>
+                <Link to="/post-job" className="text-gray-600 hover:text-gray-900">Post a Job</Link>
+                <Link to="/employer-dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
+                <Link to="/search" className="text-gray-600 hover:text-gray-900">Search Candidates</Link>
+                <Link to="/employer-settings" className="text-gray-600 hover:text-gray-900">Settings</Link>
+              </>
             )}
             {isAuthenticated && user?.role === 'CANDIDATE' && (
-              <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
+              <>
+                <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
+                <Link to="/job-alerts" className="text-gray-600 hover:text-gray-900">Alerts</Link>
+              </>
+            )}
+            {isAuthenticated && user?.role === 'ADMIN' && (
+              <Link to="/admin" className="text-gray-600 hover:text-gray-900">Admin</Link>
             )}
           </nav>
 

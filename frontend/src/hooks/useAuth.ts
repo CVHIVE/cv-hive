@@ -48,7 +48,7 @@ export function useLogin() {
       setAuth(data);
       queryClient.invalidateQueries({ queryKey: ['me'] });
       toast.success('Welcome back!');
-      navigate(data.user.role === 'EMPLOYER' ? '/search' : '/dashboard');
+      navigate(data.user.role === 'ADMIN' ? '/admin' : data.user.role === 'EMPLOYER' ? '/employer-dashboard' : '/dashboard');
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Login failed');
@@ -67,7 +67,7 @@ export function useRegister() {
       setAuth(data);
       queryClient.invalidateQueries({ queryKey: ['me'] });
       toast.success('Account created!');
-      navigate(data.user.role === 'EMPLOYER' ? '/search' : '/dashboard');
+      navigate(data.user.role === 'EMPLOYER' ? '/employer-dashboard' : '/dashboard');
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Registration failed');

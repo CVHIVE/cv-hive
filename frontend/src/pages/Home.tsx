@@ -1,128 +1,193 @@
-﻿import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { useRecentJobs } from '../hooks/useJobs';
+import type { Emirate } from '../types';
+
+const EMIRATE_OPTIONS: { value: Emirate; label: string }[] = [
+  { value: 'DUBAI', label: 'Dubai' },
+  { value: 'ABU_DHABI', label: 'Abu Dhabi' },
+  { value: 'SHARJAH', label: 'Sharjah' },
+  { value: 'AJMAN', label: 'Ajman' },
+  { value: 'RAS_AL_KHAIMAH', label: 'Ras Al Khaimah' },
+  { value: 'FUJAIRAH', label: 'Fujairah' },
+  { value: 'UMM_AL_QUWAIN', label: 'Umm Al Quwain' },
+];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [searchTitle, setSearchTitle] = useState('');
+  const [searchEmirate, setSearchEmirate] = useState('');
+  const { data: recentJobs } = useRecentJobs();
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchTitle) params.set('title', searchTitle);
+    if (searchEmirate) params.set('emirate', searchEmirate);
+    navigate(`/jobs?${params.toString()}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      {/* Hero Section */}
+
+      {/* Hero Section with Job Search */}
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold mb-6">
-            Get Discovered by 500+ UAE Employers
+            Find Your Dream Job in the UAE
           </h1>
           <p className="text-xl mb-8 text-blue-100">
-            Create your profile and let top companies find you. Free forever for job seekers.
+            Search thousands of jobs across all Emirates. Upload your CV and get discovered.
           </p>
-          <div className="flex justify-center space-x-4">
+
+          {/* Search Bar */}
+          <div className="max-w-3xl mx-auto bg-white rounded-lg p-2 flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              placeholder="Job title or keywords"
+              className="flex-1 px-4 py-3 rounded-md text-gray-900 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTitle}
+              onChange={(e) => setSearchTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <select
+              className="px-4 py-3 rounded-md text-gray-900 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchEmirate}
+              onChange={(e) => setSearchEmirate(e.target.value)}
+            >
+              <option value="">All Emirates</option>
+              {EMIRATE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleSearch}
+              className="bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 transition"
+            >
+              Search Jobs
+            </button>
+          </div>
+
+          <div className="flex justify-center gap-4 mt-6">
             <Link to="/signup">
-              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
-                Upload Your CV - It's Free
+              <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition text-sm">
+                Upload Your CV - Free
               </button>
             </Link>
-            <Link to="/employers">
-              <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
-                For Employers
+            <Link to="/post-job">
+              <button className="border-2 border-blue-300 text-blue-100 px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition text-sm">
+                Post a Job
               </button>
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Recent Jobs */}
+      {recentJobs && recentJobs.length > 0 && (
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold">Latest Jobs</h2>
+              <Link to="/jobs" className="text-blue-600 hover:underline font-medium">
+                View all jobs &rarr;
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentJobs.map((job: any) => (
+                <Link key={job.id} to={`/jobs/${job.id}`} className="card hover:shadow-md transition block">
+                  <h3 className="font-semibold text-blue-600 mb-1">{job.title}</h3>
+                  <p className="text-gray-700 text-sm font-medium mb-2">{job.company_name}</p>
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                    <span className="bg-gray-100 px-2 py-0.5 rounded">{job.emirate.replace(/_/g, ' ')}</span>
+                    <span className="bg-gray-100 px-2 py-0.5 rounded">{job.job_type.replace(/_/g, ' ')}</span>
+                    {!job.salary_hidden && job.salary_min && (
+                      <span className="bg-gray-100 px-2 py-0.5 rounded">
+                        AED {job.salary_min.toLocaleString()} - {job.salary_max.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* How It Works */}
-      <section className="py-20">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📄</span>
+                <span className="text-2xl font-bold text-blue-600">1</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">1. Upload CV</h3>
-              <p className="text-gray-600">
-                Create your profile in 5 minutes. Upload your CV and let us do the rest.
-              </p>
+              <h3 className="text-xl font-semibold mb-2">Upload CV</h3>
+              <p className="text-gray-600">Create your profile in 5 minutes. Upload your CV and let us do the rest.</p>
             </div>
-            
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🔍</span>
+                <span className="text-2xl font-bold text-blue-600">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">2. Get Discovered</h3>
-              <p className="text-gray-600">
-                Top UAE companies search our database daily for talent like you.
-              </p>
+              <h3 className="text-xl font-semibold mb-2">Search & Apply</h3>
+              <p className="text-gray-600">Browse thousands of jobs and apply with one click.</p>
             </div>
-            
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🎯</span>
+                <span className="text-2xl font-bold text-blue-600">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">3. Get Hired</h3>
-              <p className="text-gray-600">
-                Receive interview calls from verified employers. Land your dream job.
-              </p>
+              <h3 className="text-xl font-semibold mb-2">Get Hired</h3>
+              <p className="text-gray-600">Receive interview calls from verified UAE employers.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="bg-gray-50 py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">Why Choose CV Hive?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="card">
-              <div className="text-3xl mb-3">✅</div>
+            <div className="card text-center">
               <h3 className="font-semibold mb-2">Free Forever</h3>
-              <p className="text-sm text-gray-600">
-                Always free for job seekers. No hidden costs.
-              </p>
+              <p className="text-sm text-gray-600">Always free for job seekers. No hidden costs.</p>
             </div>
-            
-            <div className="card">
-              <div className="text-3xl mb-3">🇦🇪</div>
+            <div className="card text-center">
               <h3 className="font-semibold mb-2">UAE Focused</h3>
-              <p className="text-sm text-gray-600">
-                Built specifically for the UAE job market.
-              </p>
+              <p className="text-sm text-gray-600">Built specifically for the UAE job market.</p>
             </div>
-            
-            <div className="card">
-              <div className="text-3xl mb-3">🔒</div>
+            <div className="card text-center">
               <h3 className="font-semibold mb-2">Privacy First</h3>
-              <p className="text-sm text-gray-600">
-                Control who sees your profile. Your data, your choice.
-              </p>
+              <p className="text-sm text-gray-600">Control who sees your profile. Your data, your choice.</p>
             </div>
-            
-            <div className="card">
-              <div className="text-3xl mb-3">⚡</div>
+            <div className="card text-center">
               <h3 className="font-semibold mb-2">Instant Matching</h3>
-              <p className="text-sm text-gray-600">
-                Advanced search helps employers find you fast.
-              </p>
+              <p className="text-sm text-gray-600">Advanced search helps employers find you fast.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join thousands of professionals already on CV Hive
-          </p>
-          <Link to="/signup">
-            <button className="btn btn-primary px-8 py-3 text-lg">
-              Create Your Profile Now
-            </button>
-          </Link>
+      {/* CTA */}
+      <section className="bg-blue-600 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
+          <p className="text-xl text-blue-100 mb-8">Join thousands of professionals already on CV Hive</p>
+          <div className="flex justify-center gap-4">
+            <Link to="/signup">
+              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                Create Your Profile
+              </button>
+            </Link>
+            <Link to="/jobs">
+              <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                Browse Jobs
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 

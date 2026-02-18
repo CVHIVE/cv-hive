@@ -58,6 +58,12 @@ export default function Login() {
               </button>
             </form>
 
+            <div className="text-center mt-3">
+              <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                Forgot your password?
+              </Link>
+            </div>
+
             {/* Demo credentials hint */}
             <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
               <p className="font-semibold mb-1">Demo accounts:</p>

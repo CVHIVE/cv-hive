@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV } from '../hooks/useCandidates';
+import { useCandidateApplications, useSavedJobs } from '../hooks/useJobs';
 import type { UpdateCandidatePayload, VisaStatus, Emirate, AvailabilityStatus } from '../types';
 
 const VISA_LABELS: Record<VisaStatus, string> = {
@@ -35,6 +37,8 @@ export default function CandidateDashboard() {
   const { data: profile, isLoading } = useCandidateProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateCandidateProfile();
   const { mutate: uploadCV, isPending: isUploading } = useUploadCV();
+  const { data: applications } = useCandidateApplications();
+  const { data: savedJobs } = useSavedJobs();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<UpdateCandidatePayload>({});
@@ -255,7 +259,7 @@ export default function CandidateDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div
             onClick={() => fileInputRef.current?.click()}
             className="card hover:shadow-md transition cursor-pointer"
@@ -276,6 +280,74 @@ export default function CandidateDashboard() {
             <h3 className="font-semibold mb-2">Edit Profile</h3>
             <p className="text-sm text-gray-600">Update your information and skills</p>
           </div>
+          <Link to="/jobs" className="card hover:shadow-md transition block">
+            <h3 className="font-semibold mb-2">Find Jobs</h3>
+            <p className="text-sm text-gray-600">Browse and apply to UAE job listings</p>
+          </Link>
+        </div>
+
+        {/* My Applications */}
+        <div className="card mb-8">
+          <h3 className="text-xl font-semibold mb-4">My Applications ({applications?.length || 0})</h3>
+          {!applications || applications.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              No applications yet. <Link to="/jobs" className="text-blue-600 hover:underline">Browse jobs</Link>
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {applications.slice(0, 5).map((app: any) => (
+                <div key={app.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                  <div>
+                    <Link to={`/jobs/${app.job_id}`} className="font-medium text-blue-600 hover:underline">
+                      {app.job_title}
+                    </Link>
+                    <p className="text-sm text-gray-500">{app.company_name} &middot; {app.emirate?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs px-2 py-1 rounded font-medium ${
+                      app.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                      app.status === 'REVIEWED' ? 'bg-blue-100 text-blue-700' :
+                      app.status === 'SHORTLISTED' ? 'bg-purple-100 text-purple-700' :
+                      app.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                      app.status === 'HIRED' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {app.status}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(app.applied_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Saved Jobs */}
+        <div className="card">
+          <h3 className="text-xl font-semibold mb-4">Saved Jobs ({savedJobs?.length || 0})</h3>
+          {!savedJobs || savedJobs.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              No saved jobs. <Link to="/jobs" className="text-blue-600 hover:underline">Browse jobs</Link>
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {savedJobs.slice(0, 5).map((job: any) => (
+                <div key={job.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                  <div>
+                    <Link to={`/jobs/${job.id}`} className="font-medium text-blue-600 hover:underline">
+                      {job.title}
+                    </Link>
+                    <p className="text-sm text-gray-500">{job.company_name} &middot; {job.emirate?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    job.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {job.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
