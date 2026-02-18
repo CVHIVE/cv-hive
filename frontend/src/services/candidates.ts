@@ -3,6 +3,7 @@ import type {
   Candidate,
   CandidateSearchFilters,
   PaginatedCandidates,
+  RevealedContact,
   UpdateCandidatePayload,
 } from '../types';
 
@@ -23,9 +24,15 @@ export const candidateService = {
       .then((r) => r.data);
   },
 
+  removeCV: () =>
+    api.delete<Candidate>('/candidates/cv').then((r) => r.data),
+
   search: (filters: CandidateSearchFilters) =>
     api.get<PaginatedCandidates>('/candidates', { params: filters }).then((r) => r.data),
 
   getPublicProfile: (slug: string) =>
     api.get<Candidate>(`/candidates/${slug}`).then((r) => r.data),
+
+  revealContact: (candidateId: string) =>
+    api.post<RevealedContact>(`/candidates/${candidateId}/reveal`).then((r) => r.data),
 };

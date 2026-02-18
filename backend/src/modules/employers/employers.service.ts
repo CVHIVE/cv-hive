@@ -81,3 +81,19 @@ export const getPublicProfile = async (slug: string) => {
 
   return { ...employer, jobs: jobs.rows };
 };
+
+export const getPublicDirectory = async (letter?: string) => {
+  let query = `SELECT company_name, company_slug, industry, location, company_size, company_logo_url
+    FROM employers WHERE company_slug IS NOT NULL`;
+  const values: any[] = [];
+
+  if (letter && letter.length === 1) {
+    query += ` AND company_name ILIKE $1`;
+    values.push(`${letter}%`);
+  }
+
+  query += ` ORDER BY company_name ASC`;
+
+  const result = await db.query(query, values);
+  return result.rows;
+};

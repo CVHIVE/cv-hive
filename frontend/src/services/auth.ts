@@ -1,9 +1,12 @@
 import api from './api';
-import type { AuthResponse, LoginPayload, MeResponse, RegisterPayload } from '../types';
+import type { AuthResponse, LoginPayload, MeResponse, RegisterPayload, RegisterEmployerPayload } from '../types';
 
 export const authService = {
   register: (data: RegisterPayload) =>
     api.post<AuthResponse>('/auth/register', data).then((r) => r.data),
+
+  registerEmployer: (data: RegisterEmployerPayload) =>
+    api.post<AuthResponse>('/auth/register-employer', data).then((r) => r.data),
 
   login: (data: LoginPayload) =>
     api.post<AuthResponse>('/auth/login', data).then((r) => r.data),

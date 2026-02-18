@@ -11,7 +11,9 @@ const router = Router();
 router.get('/profile', authenticate, authorize('CANDIDATE'), candidateController.getProfile);
 router.put('/profile', authenticate, authorize('CANDIDATE'), validateRequest(updateProfileSchema), candidateController.updateProfile);
 router.post('/cv/upload', authenticate, authorize('CANDIDATE'), uploadCV.single('cv'), candidateController.uploadCV);
+router.delete('/cv', authenticate, authorize('CANDIDATE'), candidateController.removeCV);
 router.get('/', authenticate, authorize('EMPLOYER', 'ADMIN'), candidateController.searchCandidates);
+router.post('/:id/reveal', authenticate, authorize('EMPLOYER', 'ADMIN'), candidateController.revealContact);
 router.get('/:slug', candidateController.getPublicProfile);
 
 export default router;

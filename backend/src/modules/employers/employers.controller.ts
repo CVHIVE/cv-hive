@@ -30,6 +30,16 @@ export const uploadLogo = async (req: Request, res: Response) => {
   }
 };
 
+export const getDirectory = async (req: Request, res: Response) => {
+  try {
+    const letter = req.query.letter as string | undefined;
+    const companies = await employerService.getPublicDirectory(letter);
+    res.json({ success: true, data: companies });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 export const getPublicProfile = async (req: Request, res: Response) => {
   try {
     const profile = await employerService.getPublicProfile(req.params.slug);

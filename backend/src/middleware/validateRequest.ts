@@ -7,9 +7,13 @@ export const validateRequest = (schema: ZodSchema) => {
       schema.parse(req.body);
       next();
     } catch (error: any) {
+      const messages = error.errors?.map((e: any) => {
+        const field = e.path?.join('.') || 'field';
+        return `${field}: ${e.message}`;
+      }) || ['Invalid input'];
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
+        message: messages.join(', '),
         errors: error.errors,
       });
     }

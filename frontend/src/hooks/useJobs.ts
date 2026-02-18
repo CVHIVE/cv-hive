@@ -31,10 +31,23 @@ export function useCreateJob() {
     mutationFn: (data: CreateJobPayload) => jobService.createJob(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success('Job posted successfully!');
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to post job');
+      toast.error(err.response?.data?.message || 'Failed to create job');
+    },
+  });
+}
+
+export function usePayForJob() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => jobService.payForJob(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toast.success('Payment successful! Job is now live.');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Payment failed');
     },
   });
 }

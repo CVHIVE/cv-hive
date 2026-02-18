@@ -18,6 +18,10 @@ import ResetPassword from './pages/ResetPassword';
 import JobAlerts from './pages/JobAlerts';
 import CompanyProfile from './pages/CompanyProfile';
 import EmployerSettings from './pages/EmployerSettings';
+import PaymentMethods from './pages/PaymentMethods';
+import RegisterEmployer from './pages/RegisterEmployer';
+import CompanyDirectory from './pages/CompanyDirectory';
+import CVBuilder from './pages/CVBuilder';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function AppRoutes() {
@@ -37,6 +41,9 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/companies/:slug" element={<CompanyProfile />} />
+      <Route path="/register-employer" element={<RegisterEmployer />} />
+      <Route path="/companies" element={<CompanyDirectory />} />
+      <Route path="/cv-builder" element={<CVBuilder />} />
 
       <Route
         path="/post-job"
@@ -59,6 +66,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute roles={['EMPLOYER']}>
             <EmployerSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/payment-methods"
+        element={
+          <ProtectedRoute roles={['EMPLOYER']}>
+            <PaymentMethods />
           </ProtectedRoute>
         }
       />

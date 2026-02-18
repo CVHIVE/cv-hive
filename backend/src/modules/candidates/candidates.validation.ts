@@ -11,4 +11,11 @@ export const updateProfileSchema = z.object({
   salaryMax: z.number().int().min(0).optional(),
   availabilityStatus: z.enum(['IMMEDIATE', 'ONE_MONTH', 'TWO_TO_THREE_MONTHS', 'NOT_LOOKING']).optional(),
   profileVisible: z.boolean().optional(),
+  industry: z.string().optional(),
+  desiredJobTitles: z.string().optional(),
+  preferredEmirate: z.enum(['DUBAI', 'ABU_DHABI', 'SHARJAH', 'AJMAN', 'RAS_AL_KHAIMAH', 'FUJAIRAH', 'UMM_AL_QUWAIN']).optional(),
+  education: z.string().optional(),
+  skills: z.string().optional(),
+  noticePeriod: z.string().optional(),
+  cvVisibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
 });

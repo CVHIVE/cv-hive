@@ -17,6 +17,7 @@ const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 } });
 
 const router = Router();
 
+router.get('/directory', employerController.getDirectory);
 router.get('/profile', authenticate, authorize('EMPLOYER'), employerController.getProfile);
 router.put('/profile', authenticate, authorize('EMPLOYER'), validateRequest(updateCompanySchema), employerController.updateProfile);
 router.post('/logo', authenticate, authorize('EMPLOYER'), upload.single('logo'), employerController.uploadLogo);

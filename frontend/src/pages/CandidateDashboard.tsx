@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import { useAuthStore } from '../store/authStore';
-import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV } from '../hooks/useCandidates';
+import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
 import { useCandidateApplications, useSavedJobs } from '../hooks/useJobs';
 import type { UpdateCandidatePayload, VisaStatus, Emirate, AvailabilityStatus } from '../types';
 
@@ -37,6 +37,7 @@ export default function CandidateDashboard() {
   const { data: profile, isLoading } = useCandidateProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateCandidateProfile();
   const { mutate: uploadCV, isPending: isUploading } = useUploadCV();
+  const { mutate: removeCV, isPending: isRemoving } = useRemoveCV();
   const { data: applications } = useCandidateApplications();
   const { data: savedJobs } = useSavedJobs();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -252,7 +253,23 @@ export default function CandidateDashboard() {
               <div><span className="text-gray-500">Emirate:</span> {p?.current_emirate ? EMIRATE_LABELS[p.current_emirate] : '—'}</div>
               <div><span className="text-gray-500">Availability:</span> {p?.availability_status ? AVAILABILITY_LABELS[p.availability_status] : '—'}</div>
               <div><span className="text-gray-500">Salary:</span> {p?.salary_min && p?.salary_max ? `AED ${p.salary_min.toLocaleString()} – ${p.salary_max.toLocaleString()}` : '—'}</div>
-              <div><span className="text-gray-500">CV:</span> {p?.cv_url ? 'Uploaded' : 'Not uploaded'}</div>
+              <div>
+                <span className="text-gray-500">CV:</span>{' '}
+                {p?.cv_url ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-green-600 font-medium">
+                      {p.cv_original_filename || 'Uploaded'}
+                    </span>
+                    <button
+                      onClick={() => removeCV()}
+                      disabled={isRemoving}
+                      className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                    >
+                      {isRemoving ? 'Removing...' : 'Remove'}
+                    </button>
+                  </span>
+                ) : 'Not uploaded'}
+              </div>
               <div><span className="text-gray-500">Profile Visible:</span> {p?.profile_visible ? 'Yes' : 'No'}</div>
             </div>
           )}
@@ -260,14 +277,38 @@ export default function CandidateDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="card hover:shadow-md transition cursor-pointer"
-          >
-            <h3 className="font-semibold mb-2">Upload CV</h3>
-            <p className="text-sm text-gray-600">
-              {isUploading ? 'Uploading...' : 'Add or update your resume (PDF, DOC, DOCX — max 5MB)'}
-            </p>
+          <div className="card hover:shadow-md transition">
+            {p?.cv_url ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-green-500 text-xl">&#10003;</span>
+                  <h3 className="font-semibold">CV Uploaded</h3>
+                </div>
+                <p className="text-sm text-gray-700 mb-3 truncate">{p.cv_original_filename || 'Your CV'}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="btn btn-primary text-xs px-3 py-1"
+                  >
+                    Replace
+                  </button>
+                  <button
+                    onClick={() => removeCV()}
+                    disabled={isRemoving}
+                    className="btn btn-secondary text-xs px-3 py-1"
+                  >
+                    {isRemoving ? 'Removing...' : 'Remove'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
+                <h3 className="font-semibold mb-2">Upload CV</h3>
+                <p className="text-sm text-gray-600">
+                  {isUploading ? 'Uploading...' : 'Add your resume (PDF, DOC, DOCX — max 5MB)'}
+                </p>
+              </div>
+            )}
             <input
               ref={fileInputRef}
               type="file"

@@ -70,6 +70,14 @@ export interface Candidate {
   salary_max?: number;
   availability_status: AvailabilityStatus;
   cv_url?: string;
+  cv_original_filename?: string;
+  industry?: string;
+  desired_job_titles?: string;
+  preferred_emirate?: Emirate;
+  education?: string;
+  skills?: string;
+  notice_period?: string;
+  cv_visibility?: 'PUBLIC' | 'PRIVATE';
   profile_visible: boolean;
   profile_slug: string;
   completeness_score: number;
@@ -102,9 +110,14 @@ export interface MeResponse extends User {
 export interface RegisterPayload {
   email: string;
   password: string;
-  role: UserRole;
   fullName?: string;
-  companyName?: string;
+}
+
+export interface RegisterEmployerPayload {
+  email: string;
+  password: string;
+  companyName: string;
+  planType: string;
 }
 
 export interface LoginPayload {
@@ -124,6 +137,19 @@ export interface UpdateCandidatePayload {
   salaryMax?: number;
   availabilityStatus?: AvailabilityStatus;
   profileVisible?: boolean;
+  industry?: string;
+  desiredJobTitles?: string;
+  preferredEmirate?: Emirate;
+  education?: string;
+  skills?: string;
+  noticePeriod?: string;
+  cvVisibility?: 'PUBLIC' | 'PRIVATE';
+}
+
+export interface RevealedContact {
+  phone?: string;
+  email?: string;
+  cv_url?: string;
 }
 
 export interface CandidateSearchFilters {
@@ -131,6 +157,12 @@ export interface CandidateSearchFilters {
   visaStatus?: VisaStatus;
   jobTitle?: string;
   availability?: AvailabilityStatus;
+  industry?: string;
+  experienceMin?: number;
+  experienceMax?: number;
+  salaryMin?: number;
+  salaryMax?: number;
+  distance?: number;
   page?: number;
   limit?: number;
 }

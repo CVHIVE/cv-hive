@@ -146,8 +146,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Explore CV Hive */}
       <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-4">Explore CV Hive</h2>
+          <p className="text-center text-gray-600 mb-12">Everything you need for your career in the UAE</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link to="/jobs" className="card hover:shadow-lg transition text-center group">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Search Jobs</h3>
+              <p className="text-sm text-gray-600">Browse thousands of jobs across all UAE Emirates</p>
+            </Link>
+            <Link to="/cv-builder" className="card hover:shadow-lg transition text-center group">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">CV Builder</h3>
+              <p className="text-sm text-gray-600">Build a professional CV in minutes for free</p>
+            </Link>
+            <Link to="/job-alerts" className="card hover:shadow-lg transition text-center group">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition">
+                <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Job Alerts</h3>
+              <p className="text-sm text-gray-600">Never miss an opportunity. Get alerts for new jobs.</p>
+            </Link>
+            <Link to="/companies" className="card hover:shadow-lg transition text-center group">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Company A-Z</h3>
+              <p className="text-sm text-gray-600">Browse all registered UAE companies and their openings</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">Why Choose CV Hive?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

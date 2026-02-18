@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const createJobSchema = z.object({
-  title: z.string().min(3).max(255),
-  description: z.string().min(20),
-  industry: z.string().min(1),
+  title: z.string().min(3, 'Job title must be at least 3 characters').max(255),
+  description: z.string().min(20, 'Job description must be at least 20 characters'),
+  industry: z.string().min(1, 'Please select an industry'),
   jobType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'FREELANCE', 'INTERNSHIP']),
   emirate: z.enum(['DUBAI', 'ABU_DHABI', 'SHARJAH', 'AJMAN', 'RAS_AL_KHAIMAH', 'FUJAIRAH', 'UMM_AL_QUWAIN']),
   salaryMin: z.number().int().min(0).optional(),

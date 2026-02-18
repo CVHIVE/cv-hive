@@ -16,6 +16,7 @@ router.get('/:id', jobController.getJob);
 // Employer routes
 router.post('/', authenticate, authorize('EMPLOYER'), validateRequest(createJobSchema), jobController.createJob);
 router.put('/:id', authenticate, authorize('EMPLOYER'), validateRequest(updateJobSchema), jobController.updateJob);
+router.post('/:id/pay', authenticate, authorize('EMPLOYER'), jobController.payForJob);
 router.put('/:id/close', authenticate, authorize('EMPLOYER'), jobController.closeJob);
 router.get('/employer/mine', authenticate, authorize('EMPLOYER'), jobController.getEmployerJobs);
 router.get('/:id/applications', authenticate, authorize('EMPLOYER'), jobController.getApplicationsForJob);

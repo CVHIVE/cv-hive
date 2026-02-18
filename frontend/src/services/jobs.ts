@@ -46,4 +46,7 @@ export const jobService = {
 
   getApplicationStatusHistory: (applicationId: string) =>
     api.get(`/jobs/applications/${applicationId}/history`).then((r) => r.data),
+
+  payForJob: (id: string) =>
+    api.post(`/jobs/${id}/pay`).then((r) => r.data),
 };

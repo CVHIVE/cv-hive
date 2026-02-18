@@ -27,7 +27,7 @@ export const createJob = async (employerId: string, data: CreateJobData) => {
     [id, employerId, data.title, data.description, data.industry, data.jobType, data.emirate,
      data.salaryMin || null, data.salaryMax || null, data.salaryHidden || false,
      data.experienceMin || null, data.experienceMax || null, data.skills || null,
-     data.status || 'ACTIVE']
+     'DRAFT']
   );
   return result.rows[0];
 };
@@ -358,4 +358,31 @@ export const getRecentJobs = async (limit: number = 6) => {
     [limit]
   );
   return result.rows;
+};
+
+export const payForJob = async (jobId: string, employerId: string) => {
+  // Verify ownership and DRAFT status
+  const job = await db.query(
+    'SELECT id, status FROM jobs WHERE id = $1 AND employer_id = $2',
+    [jobId, employerId]
+  );
+  if (job.rows.length === 0) throw new Error('Job not found or not authorized');
+  if (job.rows[0].status !== 'DRAFT') throw new Error('Job is already paid for');
+
+  // Check for active payment method
+  const card = await db.query(
+    'SELECT id FROM payment_methods WHERE employer_id = $1 AND is_default = TRUE LIMIT 1',
+    [employerId]
+  );
+  if (card.rows.length === 0) {
+    throw new Error('No payment method on file. Please add a card first.');
+  }
+
+  // Charge AED 100 (in dev mode, just activate directly)
+  const result = await db.query(
+    `UPDATE jobs SET status = 'ACTIVE', expires_at = NOW() + INTERVAL '28 days', updated_at = NOW()
+     WHERE id = $1 RETURNING *`,
+    [jobId]
+  );
+  return result.rows[0];
 };

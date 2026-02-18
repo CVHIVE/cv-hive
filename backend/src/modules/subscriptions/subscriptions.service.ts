@@ -4,9 +4,29 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const createCheckoutSession = async (employerId: string, planType: 'PROFESSIONAL' | 'ENTERPRISE') => {
   const plan = STRIPE_PLANS[planType];
-  if (!plan.priceId) throw new Error('Stripe price ID not configured for ' + planType);
 
-  // Get employer info
+  // Dev mode: if no Stripe price IDs configured, activate plan directly
+  if (!plan.priceId) {
+    const sub = await db.query('SELECT * FROM subscriptions WHERE employer_id = $1', [employerId]);
+    if (sub.rows.length === 0) {
+      await db.query(
+        `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used, current_period_start, current_period_end)
+         VALUES ($1, $2, $3, 'ACTIVE', $4, 0, NOW(), NOW() + INTERVAL '30 days')`,
+        [uuidv4(), employerId, planType, plan.contactRevealsLimit]
+      );
+    } else {
+      await db.query(
+        `UPDATE subscriptions SET plan_type = $1, status = 'ACTIVE', contact_reveals_limit = $2, contact_reveals_used = 0,
+         current_period_start = NOW(), current_period_end = NOW() + INTERVAL '30 days'
+         WHERE employer_id = $3`,
+        [planType, plan.contactRevealsLimit, employerId]
+      );
+    }
+    const successUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/employer-dashboard?subscription=success`;
+    return { sessionId: 'dev-mode', url: successUrl };
+  }
+
+  // Production mode: use Stripe checkout
   const employer = await db.query(
     `SELECT e.id, e.company_name, u.email, u.id as user_id
      FROM employers e JOIN users u ON u.id = e.user_id WHERE e.id = $1`,
@@ -16,7 +36,6 @@ export const createCheckoutSession = async (employerId: string, planType: 'PROFE
 
   const emp = employer.rows[0];
 
-  // Check or create Stripe customer
   let sub = await db.query('SELECT * FROM subscriptions WHERE employer_id = $1', [employerId]);
   let customerId = sub.rows[0]?.stripe_customer_id;
 
@@ -63,10 +82,10 @@ export const handleCheckoutComplete = async (session: any) => {
   await db.query(
     `UPDATE subscriptions SET
       plan_type = $1, status = 'ACTIVE', stripe_subscription_id = $2,
-      cv_downloads_limit = $3, cv_downloads_used = 0,
+      contact_reveals_limit = $3, contact_reveals_used = 0,
       current_period_start = NOW(), current_period_end = NOW() + INTERVAL '30 days'
      WHERE employer_id = $4`,
-    [planType, subscriptionId, plan.cvDownloadsLimit, employerId]
+    [planType, subscriptionId, plan.contactRevealsLimit, employerId]
   );
 };
 
@@ -93,7 +112,7 @@ export const handleSubscriptionUpdated = async (subscription: any) => {
 export const handleSubscriptionDeleted = async (subscription: any) => {
   await db.query(
     `UPDATE subscriptions SET status = 'CANCELLED', plan_type = 'BASIC',
-     cv_downloads_limit = 10, cv_downloads_used = 0
+     contact_reveals_limit = 2, contact_reveals_used = 0
      WHERE stripe_subscription_id = $1`,
     [subscription.id]
   );
@@ -101,16 +120,18 @@ export const handleSubscriptionDeleted = async (subscription: any) => {
 
 export const cancelSubscription = async (employerId: string) => {
   const sub = await db.query(
-    'SELECT stripe_subscription_id FROM subscriptions WHERE employer_id = $1',
+    'SELECT stripe_subscription_id, plan_type FROM subscriptions WHERE employer_id = $1',
     [employerId]
   );
-  if (sub.rows.length === 0 || !sub.rows[0].stripe_subscription_id) {
+  if (sub.rows.length === 0 || sub.rows[0].plan_type === 'BASIC') {
     throw new Error('No active subscription found');
   }
 
-  await stripe.subscriptions.update(sub.rows[0].stripe_subscription_id, {
-    cancel_at_period_end: true,
-  });
+  if (sub.rows[0].stripe_subscription_id) {
+    await stripe.subscriptions.update(sub.rows[0].stripe_subscription_id, {
+      cancel_at_period_end: true,
+    });
+  }
 
   await db.query(
     'UPDATE subscriptions SET cancel_at_period_end = TRUE WHERE employer_id = $1',
@@ -126,20 +147,27 @@ export const getSubscriptionStatus = async (employerId: string) => {
     [employerId]
   );
   if (result.rows.length === 0) {
-    return { plan_type: 'BASIC', status: 'ACTIVE', cv_downloads_limit: 10, cv_downloads_used: 0 };
+    return { plan_type: 'BASIC', status: 'ACTIVE', contact_reveals_limit: 2, contact_reveals_used: 0 };
   }
   return result.rows[0];
 };
 
-export const checkCVDownloadLimit = async (employerId: string) => {
+export const checkContactRevealLimit = async (employerId: string) => {
   const sub = await getSubscriptionStatus(employerId);
-  if (sub.cv_downloads_limit === -1) return true; // unlimited
-  return sub.cv_downloads_used < sub.cv_downloads_limit;
+  if (sub.contact_reveals_limit === -1) return true; // unlimited
+  return sub.contact_reveals_used < sub.contact_reveals_limit;
 };
 
-export const incrementCVDownload = async (employerId: string) => {
-  await db.query(
-    'UPDATE subscriptions SET cv_downloads_used = cv_downloads_used + 1 WHERE employer_id = $1',
+export const incrementContactReveal = async (employerId: string) => {
+  const result = await db.query(
+    'UPDATE subscriptions SET contact_reveals_used = contact_reveals_used + 1 WHERE employer_id = $1',
     [employerId]
   );
+  if (result.rowCount === 0) {
+    await db.query(
+      `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used)
+       VALUES ($1, $2, 'BASIC', 'ACTIVE', 2, 1)`,
+      [uuidv4(), employerId]
+    );
+  }
 };

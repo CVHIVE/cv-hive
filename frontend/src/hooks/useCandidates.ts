@@ -42,6 +42,21 @@ export function useUploadCV() {
   });
 }
 
+export function useRemoveCV() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => candidateService.removeCV(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['candidateProfile'] });
+      toast.success('CV removed');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Remove failed');
+    },
+  });
+}
+
 export function useSearchCandidates(filters: CandidateSearchFilters) {
   return useQuery({
     queryKey: ['searchCandidates', filters],

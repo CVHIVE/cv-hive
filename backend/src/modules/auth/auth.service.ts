@@ -9,13 +9,18 @@ import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/em
 interface RegisterData {
   email: string;
   password: string;
-  role: string;
   fullName?: string;
-  companyName?: string;
+}
+
+interface RegisterEmployerData {
+  email: string;
+  password: string;
+  companyName: string;
+  planType?: string;
 }
 
 export const register = async (data: RegisterData) => {
-  const { email, password, role, fullName, companyName } = data;
+  const { email, password, fullName } = data;
 
   const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
   if (existing.rows.length > 0) {
@@ -24,6 +29,7 @@ export const register = async (data: RegisterData) => {
 
   const passwordHash = await hashPassword(password);
   const userId = uuidv4();
+  const role = 'CANDIDATE';
 
   const verificationToken = crypto.randomBytes(32).toString('hex');
 
@@ -32,26 +38,62 @@ export const register = async (data: RegisterData) => {
     [userId, email, passwordHash, role, verificationToken]
   );
 
-  // Send verification email (non-blocking)
   sendVerificationEmail(email, verificationToken, userId).catch((err) =>
     console.error('Failed to send verification email:', err.message)
   );
 
-  if (role === 'CANDIDATE') {
-    const name = fullName || 'New Candidate';
-    const slug = slugify(name, { lower: true, strict: true }) + '-' + Date.now().toString(36);
-    await db.query(
-      `INSERT INTO candidates (id, user_id, full_name, visa_status, current_emirate, availability_status, profile_slug)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [uuidv4(), userId, name, 'OWN_VISA', 'DUBAI', 'IMMEDIATE', slug]
-    );
-  } else if (role === 'EMPLOYER') {
-    const company = companyName || 'New Company';
-    await db.query(
-      'INSERT INTO employers (id, user_id, company_name) VALUES ($1, $2, $3)',
-      [uuidv4(), userId, company]
-    );
+  const name = fullName || 'New Candidate';
+  const candidateSlug = slugify(name, { lower: true, strict: true }) + '-' + Date.now().toString(36);
+  await db.query(
+    `INSERT INTO candidates (id, user_id, full_name, visa_status, current_emirate, availability_status, profile_slug)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [uuidv4(), userId, name, 'OWN_VISA', 'DUBAI', 'IMMEDIATE', candidateSlug]
+  );
+
+  const accessToken = generateAccessToken({ id: userId, email, role });
+  const refreshToken = generateRefreshToken({ id: userId });
+
+  return { user: { id: userId, email, role }, accessToken, refreshToken };
+};
+
+export const registerEmployer = async (data: RegisterEmployerData) => {
+  const { email, password, companyName, planType } = data;
+
+  const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+  if (existing.rows.length > 0) {
+    throw new Error('Email already registered');
   }
+
+  const passwordHash = await hashPassword(password);
+  const userId = uuidv4();
+  const role = 'EMPLOYER';
+
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  await db.query(
+    'INSERT INTO users (id, email, password_hash, role, verification_token) VALUES ($1, $2, $3, $4, $5)',
+    [userId, email, passwordHash, role, verificationToken]
+  );
+
+  sendVerificationEmail(email, verificationToken, userId).catch((err) =>
+    console.error('Failed to send verification email:', err.message)
+  );
+
+  const employerId = uuidv4();
+  const companySlug = slugify(companyName, { lower: true, strict: true }) + '-' + Date.now().toString(36);
+  await db.query(
+    'INSERT INTO employers (id, user_id, company_name, company_slug) VALUES ($1, $2, $3, $4)',
+    [employerId, userId, companyName, companySlug]
+  );
+
+  // Create subscription with chosen plan
+  const plan = planType || 'BASIC';
+  const limits: Record<string, number> = { BASIC: 2, PROFESSIONAL: 100, ENTERPRISE: -1 };
+  await db.query(
+    `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used, current_period_start, current_period_end)
+     VALUES ($1, $2, $3, 'ACTIVE', $4, 0, NOW(), NOW() + INTERVAL '30 days')`,
+    [uuidv4(), employerId, plan, limits[plan] || 2]
+  );
 
   const accessToken = generateAccessToken({ id: userId, email, role });
   const refreshToken = generateRefreshToken({ id: userId });

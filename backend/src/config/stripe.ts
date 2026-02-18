@@ -9,19 +9,19 @@ export const STRIPE_PLANS = {
     name: 'Basic',
     priceId: null, // Free plan
     priceAED: 0,
-    cvDownloadsLimit: 10,
+    contactRevealsLimit: 2,
   },
   PROFESSIONAL: {
     name: 'Professional',
     priceId: process.env.STRIPE_PROFESSIONAL_PRICE_ID || null,
     priceAED: 499,
-    cvDownloadsLimit: 100,
+    contactRevealsLimit: 100,
   },
   ENTERPRISE: {
     name: 'Enterprise',
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || null,
     priceAED: 1499,
-    cvDownloadsLimit: -1, // unlimited
+    contactRevealsLimit: -1, // unlimited
   },
 } as const;
 

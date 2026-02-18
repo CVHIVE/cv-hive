@@ -11,6 +11,8 @@ async function seed() {
 
   // ── Drop existing tables (dev only) ─────────────────
   await db.query(`
+    DROP TABLE IF EXISTS contact_reveals CASCADE;
+    DROP TABLE IF EXISTS payment_methods CASCADE;
     DROP TABLE IF EXISTS analytics_events CASCADE;
     DROP TABLE IF EXISTS email_logs CASCADE;
     DROP TABLE IF EXISTS job_alerts CASCADE;
@@ -53,6 +55,14 @@ async function seed() {
       salary_max INTEGER,
       availability_status VARCHAR(30) DEFAULT 'IMMEDIATE',
       cv_url VARCHAR(500),
+      cv_original_filename VARCHAR(255),
+      industry VARCHAR(100),
+      desired_job_titles TEXT,
+      preferred_emirate VARCHAR(30),
+      education VARCHAR(255),
+      skills TEXT,
+      notice_period VARCHAR(50),
+      cv_visibility VARCHAR(20) DEFAULT 'PUBLIC',
       profile_visible BOOLEAN DEFAULT TRUE,
       profile_slug VARCHAR(255) UNIQUE,
       completeness_score INTEGER DEFAULT 0,
@@ -127,8 +137,8 @@ async function seed() {
       cancel_at_period_end BOOLEAN DEFAULT FALSE,
       current_period_start TIMESTAMP,
       current_period_end TIMESTAMP,
-      cv_downloads_limit INTEGER DEFAULT 10,
-      cv_downloads_used INTEGER DEFAULT 0,
+      contact_reveals_limit INTEGER DEFAULT 2,
+      contact_reveals_used INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW()
     );
 
@@ -167,6 +177,19 @@ async function seed() {
       sent_at TIMESTAMP DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS payment_methods (
+      id UUID PRIMARY KEY,
+      employer_id UUID NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
+      card_brand VARCHAR(20) NOT NULL,
+      card_last4 VARCHAR(4) NOT NULL,
+      card_exp_month INTEGER NOT NULL,
+      card_exp_year INTEGER NOT NULL,
+      cardholder_name VARCHAR(255) NOT NULL,
+      is_default BOOLEAN DEFAULT FALSE,
+      stripe_payment_method_id VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS analytics_events (
       id UUID PRIMARY KEY,
       employer_id UUID REFERENCES employers(id) ON DELETE CASCADE,
@@ -175,6 +198,14 @@ async function seed() {
       candidate_id UUID REFERENCES candidates(id),
       metadata JSONB,
       created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS contact_reveals (
+      id UUID PRIMARY KEY,
+      employer_id UUID NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
+      candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+      revealed_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(employer_id, candidate_id)
     );
   `);
 

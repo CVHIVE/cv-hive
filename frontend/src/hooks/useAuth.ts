@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authService } from '../services/auth';
 import { useAuthStore } from '../store/authStore';
-import type { LoginPayload, RegisterPayload } from '../types';
+import type { LoginPayload, RegisterPayload, RegisterEmployerPayload } from '../types';
 
 export function useMe() {
   const { setUser, setLoading, logout } = useAuthStore();
@@ -58,7 +58,6 @@ export function useLogin() {
 
 export function useRegister() {
   const { setAuth } = useAuthStore();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -67,7 +66,26 @@ export function useRegister() {
       setAuth(data);
       queryClient.invalidateQueries({ queryKey: ['me'] });
       toast.success('Account created!');
-      navigate(data.user.role === 'EMPLOYER' ? '/employer-dashboard' : '/dashboard');
+      // Don't navigate — Signup page handles multi-step flow
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Registration failed');
+    },
+  });
+}
+
+export function useRegisterEmployer() {
+  const { setAuth } = useAuthStore();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: RegisterEmployerPayload) => authService.registerEmployer(data),
+    onSuccess: (data) => {
+      setAuth(data);
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast.success('Employer account created!');
+      navigate('/employer-dashboard');
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Registration failed');

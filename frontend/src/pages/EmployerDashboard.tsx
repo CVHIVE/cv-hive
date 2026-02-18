@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
-import { useEmployerJobs, useCloseJob, useJobApplications, useUpdateApplicationStatus } from '../hooks/useJobs';
+import { useEmployerJobs, useCloseJob, usePayForJob, useJobApplications, useUpdateApplicationStatus } from '../hooks/useJobs';
 import api from '../services/api';
 import { subscriptionService } from '../services/subscriptions';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 export default function EmployerDashboard() {
   const { data: jobs, isLoading } = useEmployerJobs();
   const { mutate: closeJob } = useCloseJob();
+  const { mutate: payForJob, isPending: isPaying } = usePayForJob();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [tab, setTab] = useState<'jobs' | 'applications' | 'analytics' | 'subscription'>('jobs');
   const { data: applications } = useJobApplications(selectedJobId || '');
@@ -120,6 +121,15 @@ export default function EmployerDashboard() {
                       >
                         View Applications
                       </button>
+                      {job.status === 'DRAFT' && (
+                        <button
+                          onClick={() => payForJob(job.id)}
+                          disabled={isPaying}
+                          className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded hover:bg-green-200 font-medium"
+                        >
+                          Pay AED 100 & Publish
+                        </button>
+                      )}
                       {job.status === 'ACTIVE' && (
                         <button
                           onClick={() => closeJob(job.id)}
@@ -310,19 +320,19 @@ export default function EmployerDashboard() {
                     )}
                   </div>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p>CV Downloads: {subscription.cv_downloads_used} / {subscription.cv_downloads_limit === -1 ? 'Unlimited' : subscription.cv_downloads_limit}</p>
+                    <p>Contact Reveals: {subscription.contact_reveals_used} / {subscription.contact_reveals_limit === -1 ? 'Unlimited' : subscription.contact_reveals_limit}</p>
                     {subscription.current_period_end && (
                       <p>Current period ends: {new Date(subscription.current_period_end).toLocaleDateString()}</p>
                     )}
                   </div>
 
-                  {/* CV Download Progress */}
-                  {subscription.cv_downloads_limit > 0 && (
+                  {/* Contact Reveals Progress */}
+                  {subscription.contact_reveals_limit > 0 && (
                     <div className="mt-4">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${Math.min(100, (subscription.cv_downloads_used / subscription.cv_downloads_limit) * 100)}%` }}
+                          style={{ width: `${Math.min(100, (subscription.contact_reveals_used / subscription.contact_reveals_limit) * 100)}%` }}
                         />
                       </div>
                     </div>

@@ -17,6 +17,22 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+export const registerEmployer = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.registerEmployer(req.body);
+    res.status(201).json({
+      success: true,
+      message: 'Employer registration successful',
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Registration failed',
+    });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;

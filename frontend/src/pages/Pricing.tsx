@@ -16,7 +16,7 @@ const plans = [
     description: 'For small businesses getting started',
     features: [
       'Browse candidate profiles',
-      'Up to 10 CV downloads / month',
+      'Up to 2 contact reveals / month',
       'Basic search filters',
       'Email support',
     ],
@@ -31,7 +31,7 @@ const plans = [
     description: 'For growing companies hiring regularly',
     features: [
       'Everything in Basic',
-      'Up to 100 CV downloads / month',
+      'Up to 100 contact reveals / month',
       'Advanced search filters',
       'Candidate bookmarking',
       'Priority support',
@@ -48,7 +48,7 @@ const plans = [
     description: 'For large organizations with high-volume hiring',
     features: [
       'Everything in Professional',
-      'Unlimited CV downloads',
+      'Unlimited contact reveals',
       'Dedicated account manager',
       'API access',
       'Custom integrations',
@@ -172,7 +172,7 @@ export default function Pricing() {
                       {loadingPlan === plan.key ? 'Redirecting...' : plan.cta}
                     </button>
                   ) : (
-                    <Link to="/signup">
+                    <Link to={`/register-employer?plan=${plan.key}`}>
                       <button
                         className={`w-full py-3 rounded-lg font-semibold transition ${
                           plan.highlighted
@@ -201,6 +201,112 @@ export default function Pricing() {
               <Link to="/signup" className="inline-block mt-4">
                 <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
                   Create Free Profile
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CV Search Demo */}
+      <section className="py-16 bg-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold mb-2">See How CV Search Works</h2>
+            <p className="text-gray-600">Preview our powerful candidate search filters</p>
+          </div>
+
+          <div className="relative">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Demo Filters */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                  <h3 className="font-semibold text-gray-800">Search Filters</h3>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Job Title / Keywords</label>
+                    <input className="input" placeholder="e.g. Software Engineer" disabled />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Visa Status</label>
+                    <select className="input" disabled><option>All Visa Types</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Emirate</label>
+                    <select className="input" disabled><option>All Emirates</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Distance</label>
+                    <select className="input" disabled><option>Within 25 miles</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Industry</label>
+                    <select className="input" disabled><option>Technology</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Experience (years)</label>
+                    <div className="flex gap-2">
+                      <input className="input w-1/2" placeholder="Min" disabled />
+                      <input className="input w-1/2" placeholder="Max" disabled />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Salary Range (AED)</label>
+                    <div className="flex gap-2">
+                      <input className="input w-1/2" placeholder="Min" disabled />
+                      <input className="input w-1/2" placeholder="Max" disabled />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Availability</label>
+                    <select className="input" disabled><option>Immediate</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Education Level</label>
+                    <select className="input" disabled><option>Bachelor's Degree</option></select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">CV Updated</label>
+                    <select className="input" disabled><option>Last 30 days</option></select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Demo Results - Blurred */}
+              <div className="lg:col-span-3 space-y-4">
+                <p className="text-sm text-gray-500">247 candidates found</p>
+                {[
+                  { name: 'A****** M.', title: 'Senior Software Engineer', exp: '8 yrs', loc: 'Dubai' },
+                  { name: 'F****** H.', title: 'Marketing Manager', exp: '6 yrs', loc: 'Abu Dhabi' },
+                  { name: 'R** P.', title: 'Financial Analyst', exp: '4 yrs', loc: 'Dubai' },
+                  { name: 'S**** A.', title: 'UX Designer', exp: '5 yrs', loc: 'Sharjah' },
+                ].map((c, i) => (
+                  <div key={i} className="bg-white rounded-xl p-5 shadow-sm flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center text-blue-600 font-bold">
+                      {c.name.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-800">{c.name}</h4>
+                      <p className="text-gray-500 text-sm">{c.title}</p>
+                      <div className="flex gap-3 text-xs text-gray-400 mt-1">
+                        <span>{c.exp} exp</span>
+                        <span>{c.loc}</span>
+                        <span>Own Visa</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="bg-gray-200 text-gray-400 text-xs px-4 py-2 rounded-lg text-center">View Profile</div>
+                      <div className="bg-gray-200 text-gray-400 text-xs px-4 py-2 rounded-lg text-center">Reveal</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Overlay CTA */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-transparent to-transparent flex items-end justify-center pb-8 pointer-events-none">
+              <Link to="/register-employer?plan=PROFESSIONAL" className="pointer-events-auto">
+                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition text-lg">
+                  Subscribe to Search Candidates
                 </button>
               </Link>
             </div>
