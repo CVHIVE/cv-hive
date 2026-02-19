@@ -63,6 +63,7 @@ export default function Header() {
             <Link to="/companies" className={desktopLinkClass('/companies')}>Companies</Link>
             <Link to="/cv-database" className={desktopLinkClass('/cv-database')}>CV Database</Link>
             <Link to="/salary-guide" className={desktopLinkClass('/salary-guide')}>Salary Guide</Link>
+            <Link to="/career-advice" className={desktopLinkClass('/career-advice')}>Career Advice</Link>
             <Link to="/pricing" className={desktopLinkClass('/pricing')}>Pricing</Link>
             {isAuthenticated && user?.role === 'ADMIN' && (
               <Link to="/admin" className={desktopLinkClass('/admin')}>Admin</Link>
