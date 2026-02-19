@@ -11,6 +11,7 @@ async function seed() {
 
   // ── Drop existing tables (dev only) ─────────────────
   await db.query(`
+    DROP TABLE IF EXISTS bookmarked_candidates CASCADE;
     DROP TABLE IF EXISTS contact_reveals CASCADE;
     DROP TABLE IF EXISTS payment_methods CASCADE;
     DROP TABLE IF EXISTS analytics_events CASCADE;
@@ -211,6 +212,15 @@ async function seed() {
       employer_id UUID NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
       candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
       revealed_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(employer_id, candidate_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS bookmarked_candidates (
+      id UUID PRIMARY KEY,
+      employer_id UUID NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
+      candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
       UNIQUE(employer_id, candidate_id)
     );
   `);

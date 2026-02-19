@@ -161,6 +161,22 @@ export const getSubscriptionStatus = async (employerId: string) => {
   return result.rows[0];
 };
 
+/** Returns the active plan type for an employer: DEMO | PROFESSIONAL | ENTERPRISE */
+export const getEmployerPlan = async (employerId: string): Promise<string> => {
+  const result = await db.query(
+    "SELECT plan_type FROM subscriptions WHERE employer_id = $1 AND status = 'ACTIVE'",
+    [employerId]
+  );
+  return result.rows.length > 0 ? result.rows[0].plan_type : 'DEMO';
+};
+
+/** Check if employer has at least the given plan tier */
+export const hasMinPlan = async (employerId: string, minPlan: 'PROFESSIONAL' | 'ENTERPRISE'): Promise<boolean> => {
+  const plan = await getEmployerPlan(employerId);
+  const tiers: Record<string, number> = { DEMO: 0, PROFESSIONAL: 1, ENTERPRISE: 2 };
+  return (tiers[plan] ?? 0) >= (tiers[minPlan] ?? 0);
+};
+
 export const checkContactRevealLimit = async (employerId: string) => {
   const sub = await getSubscriptionStatus(employerId);
   if (sub.contact_reveals_limit === -1) return true; // unlimited

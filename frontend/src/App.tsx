@@ -33,6 +33,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const MyApplications = lazy(() => import('./pages/MyApplications'));
 const SavedJobs = lazy(() => import('./pages/SavedJobs'));
 const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
+const BookmarkedCandidates = lazy(() => import('./pages/BookmarkedCandidates'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function PageLoader() {
@@ -131,6 +132,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute roles={['EMPLOYER', 'ADMIN']}>
             <EmployerSearch />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookmarked-candidates"
+        element={
+          <ProtectedRoute roles={['EMPLOYER', 'ADMIN']}>
+            <BookmarkedCandidates />
           </ProtectedRoute>
         }
       />

@@ -72,3 +72,53 @@ export function usePublicProfile(slug: string) {
     enabled: !!slug,
   });
 }
+
+// ── Bookmarking hooks ──────────────────────────────────
+
+export function useBookmarkIds() {
+  return useQuery({
+    queryKey: ['bookmarkIds'],
+    queryFn: () => candidateService.getBookmarkIds(),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useBookmarkedCandidates(page = 1, limit = 20) {
+  return useQuery({
+    queryKey: ['bookmarkedCandidates', page, limit],
+    queryFn: () => candidateService.getBookmarkedCandidates(page, limit),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useBookmarkCandidate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (candidateId: string) => candidateService.bookmarkCandidate(candidateId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookmarkIds'] });
+      queryClient.invalidateQueries({ queryKey: ['bookmarkedCandidates'] });
+      toast.success('Candidate bookmarked');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to bookmark');
+    },
+  });
+}
+
+export function useUnbookmarkCandidate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (candidateId: string) => candidateService.unbookmarkCandidate(candidateId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookmarkIds'] });
+      queryClient.invalidateQueries({ queryKey: ['bookmarkedCandidates'] });
+      toast.success('Bookmark removed');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to remove bookmark');
+    },
+  });
+}

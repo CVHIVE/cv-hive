@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as candidateService from './candidates.service';
-import { checkContactRevealLimit, incrementContactReveal } from '../subscriptions/subscriptions.service';
+import { checkContactRevealLimit, incrementContactReveal, hasMinPlan } from '../subscriptions/subscriptions.service';
 import db from '../../config/database';
 
 export const getProfile = async (req: Request, res: Response) => {
@@ -45,7 +45,22 @@ export const removeCV = async (req: Request, res: Response) => {
 
 export const searchCandidates = async (req: Request, res: Response) => {
   try {
-    const result = await candidateService.searchCandidates(req.query);
+    const userId = (req as any).user?.id;
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    const employerId = empResult.rows[0]?.id;
+
+    // Strip advanced filters for DEMO users
+    const filters = { ...req.query };
+    if (employerId) {
+      const isPro = await hasMinPlan(employerId, 'PROFESSIONAL');
+      if (!isPro) {
+        delete filters.skills;
+        delete filters.education;
+        delete filters.noticePeriod;
+      }
+    }
+
+    const result = await candidateService.searchCandidates(filters);
     res.status(200).json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
@@ -97,6 +112,112 @@ export const revealContact = async (req: Request, res: Response) => {
     await candidateService.recordReveal(employerId, candidateId);
 
     res.json({ success: true, data: contactInfo });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// ── Bookmarking (Professional+ only) ──────────────────
+
+export const bookmarkCandidate = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const candidateId = req.params.id;
+    const { notes } = req.body || {};
+
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'Employer profile not found' });
+    }
+    const employerId = empResult.rows[0].id;
+
+    const isPro = await hasMinPlan(employerId, 'PROFESSIONAL');
+    if (!isPro) {
+      return res.status(403).json({ success: false, message: 'Candidate bookmarking requires a Professional or Enterprise plan.' });
+    }
+
+    const bookmark = await candidateService.bookmarkCandidate(employerId, candidateId, notes);
+    res.json({ success: true, data: bookmark });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const unbookmarkCandidate = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const candidateId = req.params.id;
+
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'Employer profile not found' });
+    }
+    const employerId = empResult.rows[0].id;
+
+    await candidateService.unbookmarkCandidate(employerId, candidateId);
+    res.json({ success: true, message: 'Bookmark removed' });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getBookmarkedCandidates = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'Employer profile not found' });
+    }
+    const employerId = empResult.rows[0].id;
+
+    const isPro = await hasMinPlan(employerId, 'PROFESSIONAL');
+    if (!isPro) {
+      return res.status(403).json({ success: false, message: 'Candidate bookmarking requires a Professional or Enterprise plan.' });
+    }
+
+    const { page, limit } = req.query;
+    const result = await candidateService.getBookmarkedCandidates(employerId, Number(page) || 1, Number(limit) || 20);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getBookmarkIds = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'Employer profile not found' });
+    }
+    const employerId = empResult.rows[0].id;
+    const ids = await candidateService.getBookmarkIds(employerId);
+    res.json({ success: true, data: ids });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// ── Bulk Export (Enterprise only) ─────────────────────
+
+export const exportCandidates = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const empResult = await db.query('SELECT id FROM employers WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'Employer profile not found' });
+    }
+    const employerId = empResult.rows[0].id;
+
+    const isEnterprise = await hasMinPlan(employerId, 'ENTERPRISE');
+    if (!isEnterprise) {
+      return res.status(403).json({ success: false, message: 'Bulk candidate export requires an Enterprise plan.' });
+    }
+
+    const csv = await candidateService.exportCandidatesCSV(req.query);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="candidates-export.csv"');
+    res.send(csv);
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }

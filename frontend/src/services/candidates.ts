@@ -5,6 +5,7 @@ import type {
   PaginatedCandidates,
   RevealedContact,
   UpdateCandidatePayload,
+  BookmarkedCandidate,
 } from '../types';
 
 export const candidateService = {
@@ -35,4 +36,21 @@ export const candidateService = {
 
   revealContact: (candidateId: string) =>
     api.post<RevealedContact>(`/candidates/${candidateId}/reveal`).then((r) => r.data),
+
+  // Bookmarking (Professional+)
+  bookmarkCandidate: (candidateId: string) =>
+    api.post(`/candidates/${candidateId}/bookmark`).then((r) => r.data),
+
+  unbookmarkCandidate: (candidateId: string) =>
+    api.delete(`/candidates/${candidateId}/bookmark`).then((r) => r.data),
+
+  getBookmarkedCandidates: (page = 1, limit = 20) =>
+    api.get<{ candidates: BookmarkedCandidate[]; pagination: any }>('/candidates/bookmarks', { params: { page, limit } }).then((r) => r.data),
+
+  getBookmarkIds: () =>
+    api.get<string[]>('/candidates/bookmark-ids').then((r) => r.data),
+
+  // Bulk export (Enterprise)
+  exportCandidatesCSV: (filters: CandidateSearchFilters) =>
+    api.get('/candidates/export', { params: filters, responseType: 'blob' }).then((r) => r.data),
 };

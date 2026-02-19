@@ -166,6 +166,9 @@ export interface CandidateSearchFilters {
   salaryMin?: number;
   salaryMax?: number;
   distance?: number;
+  skills?: string;
+  education?: string;
+  noticePeriod?: string;
   page?: number;
   limit?: number;
 }
@@ -179,6 +182,16 @@ export interface CandidateSearchResult {
   total_experience_years?: number;
   availability_status: AvailabilityStatus;
   profile_slug: string;
+  industry?: string;
+  skills?: string;
+  education?: string;
+  notice_period?: string;
+}
+
+export interface BookmarkedCandidate extends CandidateSearchResult {
+  bookmark_id: string;
+  bookmark_notes?: string;
+  bookmarked_at: string;
 }
 
 export interface PaginatedCandidates {
@@ -278,4 +291,14 @@ export interface CreateJobPayload {
   experienceMax?: number;
   skills?: string;
   status?: JobStatus;
+}
+
+// ── Subscription ───────────────────────────────────────
+export interface SubscriptionData {
+  plan_type: SubscriptionPlan;
+  status: SubscriptionStatus;
+  contact_reveals_limit: number;
+  contact_reveals_used: number;
+  cancel_at_period_end?: boolean;
+  current_period_end?: string;
 }

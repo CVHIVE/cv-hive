@@ -106,6 +106,7 @@ export default function Header() {
                           <Link to="/employer-dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Dashboard</Link>
                           <Link to="/post-job" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Post a Job</Link>
                           <Link to="/search" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Search Candidates</Link>
+                          <Link to="/bookmarked-candidates" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Bookmarked</Link>
                           <Link to="/employer-settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Settings</Link>
                           <Link to="/payment-methods" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Payment Methods</Link>
                         </div>
