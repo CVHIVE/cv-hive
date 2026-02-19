@@ -89,6 +89,24 @@ export function applicationStatusCandidate(jobTitle: string, companyName: string
   };
 }
 
+export function contactFormEmail(name: string, email: string, subject: string, message: string) {
+  return {
+    subject: `Contact Form: ${subject || 'General Enquiry'} — from ${name}`,
+    html: layout(`
+      <h2 style="color:#111;font-size:20px;">New Contact Form Submission</h2>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr><td style="padding:8px 0;color:#6b7280;width:100px;">Name:</td><td style="padding:8px 0;font-weight:600;">${name}</td></tr>
+        <tr><td style="padding:8px 0;color:#6b7280;">Email:</td><td style="padding:8px 0;"><a href="mailto:${email}" style="color:#2563eb;">${email}</a></td></tr>
+        <tr><td style="padding:8px 0;color:#6b7280;">Subject:</td><td style="padding:8px 0;">${subject || 'General Enquiry'}</td></tr>
+      </table>
+      <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:16px 0;">
+        <p style="color:#374151;white-space:pre-wrap;margin:0;">${message}</p>
+      </div>
+      <p style="color:#9ca3af;font-size:12px;">Reply directly to this email to respond to ${name}.</p>
+    `),
+  };
+}
+
 export function jobAlertDigest(alerts: Array<{ title: string; company: string; emirate: string; id: string }>) {
   const jobRows = alerts.map(j => `
     <tr>

@@ -9,6 +9,7 @@ const router = Router();
 
 // Public routes
 router.get('/stats', jobController.getPlatformStats);
+router.get('/salary-guide', jobController.getSalaryGuide);
 router.get('/featured-employers', jobController.getFeaturedEmployers);
 router.get('/recent', jobController.getRecentJobs);
 router.get('/search', jobController.searchJobs);
@@ -34,6 +35,7 @@ router.get('/applications/:applicationId/history', authenticate, authorize('EMPL
 // Candidate routes
 router.post('/:id/apply', authenticate, authorize('CANDIDATE'), jobController.applyToJob);
 router.get('/applications/mine', authenticate, authorize('CANDIDATE'), jobController.getCandidateApplications);
+router.put('/applications/:applicationId/withdraw', authenticate, authorize('CANDIDATE'), jobController.withdrawApplication);
 router.post('/:id/save', authenticate, authorize('CANDIDATE'), jobController.saveJob);
 router.delete('/:id/save', authenticate, authorize('CANDIDATE'), jobController.unsaveJob);
 router.get('/saved/mine', authenticate, authorize('CANDIDATE'), jobController.getSavedJobs);

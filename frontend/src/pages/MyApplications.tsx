@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import CandidateNav from '../components/candidate/CandidateNav';
-import { useCandidateApplications } from '../hooks/useJobs';
+import { useCandidateApplications, useWithdrawApplication } from '../hooks/useJobs';
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-yellow-50 text-yellow-700',
@@ -27,6 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function MyApplications() {
   const { data: applications, isLoading } = useCandidateApplications();
+  const { mutate: withdrawApp, isPending: isWithdrawing } = useWithdrawApplication();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -91,6 +92,16 @@ export default function MyApplications() {
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[app.status] || 'bg-gray-100 text-gray-600'}`}>
                         {STATUS_LABELS[app.status] || app.status}
                       </span>
+                      {app.status !== 'WITHDRAWN' && app.status !== 'HIRED' && app.status !== 'REJECTED' && (
+                        <button
+                          onClick={() => { if (confirm('Are you sure you want to withdraw this application?')) withdrawApp(app.id); }}
+                          disabled={isWithdrawing}
+                          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                          title="Withdraw application"
+                        >
+                          Withdraw
+                        </button>
+                      )}
                     </div>
                   </div>
 

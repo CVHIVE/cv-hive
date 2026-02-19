@@ -259,6 +259,29 @@ export const getCandidateApplications = async (candidateId: string) => {
   return result.rows;
 };
 
+export const withdrawApplication = async (applicationId: string, candidateId: string) => {
+  const app = await db.query(
+    'SELECT id, status, job_id FROM job_applications WHERE id = $1 AND candidate_id = $2',
+    [applicationId, candidateId]
+  );
+  if (app.rows.length === 0) throw new Error('Application not found');
+  if (app.rows[0].status === 'WITHDRAWN') throw new Error('Application already withdrawn');
+  if (app.rows[0].status === 'HIRED') throw new Error('Cannot withdraw a hired application');
+
+  await db.query(
+    "UPDATE job_applications SET status = 'WITHDRAWN', updated_at = NOW() WHERE id = $1",
+    [applicationId]
+  );
+
+  // Decrement applications count on job
+  await db.query(
+    'UPDATE jobs SET applications_count = GREATEST(0, applications_count - 1) WHERE id = $1',
+    [app.rows[0].job_id]
+  );
+
+  return { id: applicationId, status: 'WITHDRAWN' };
+};
+
 export const saveJob = async (jobId: string, candidateId: string) => {
   const existing = await db.query(
     'SELECT id FROM saved_jobs WHERE job_id = $1 AND candidate_id = $2',
@@ -434,6 +457,48 @@ export const getPlatformStats = async () => {
     candidates: parseInt(candidates.rows[0].count),
     employers: parseInt(employers.rows[0].count),
     industries: industries.rows.map((r: any) => ({ name: r.industry, count: parseInt(r.count) })),
+  };
+};
+
+export const getSalaryGuide = async () => {
+  const [byIndustry, byEmirate, overall] = await Promise.all([
+    db.query(
+      `SELECT industry,
+              COUNT(*) as job_count,
+              ROUND(AVG(salary_min)) as avg_min,
+              ROUND(AVG(salary_max)) as avg_max,
+              ROUND(AVG((COALESCE(salary_min,0) + COALESCE(salary_max,0)) / 2)) as avg_salary,
+              MIN(salary_min) as lowest,
+              MAX(salary_max) as highest
+       FROM jobs
+       WHERE salary_min IS NOT NULL AND salary_max IS NOT NULL AND salary_min > 0
+       GROUP BY industry
+       ORDER BY avg_salary DESC`
+    ),
+    db.query(
+      `SELECT emirate,
+              COUNT(*) as job_count,
+              ROUND(AVG(salary_min)) as avg_min,
+              ROUND(AVG(salary_max)) as avg_max,
+              ROUND(AVG((COALESCE(salary_min,0) + COALESCE(salary_max,0)) / 2)) as avg_salary
+       FROM jobs
+       WHERE salary_min IS NOT NULL AND salary_max IS NOT NULL AND salary_min > 0
+       GROUP BY emirate
+       ORDER BY avg_salary DESC`
+    ),
+    db.query(
+      `SELECT COUNT(*) as total_jobs,
+              ROUND(AVG(salary_min)) as avg_min,
+              ROUND(AVG(salary_max)) as avg_max,
+              ROUND(AVG((COALESCE(salary_min,0) + COALESCE(salary_max,0)) / 2)) as avg_salary
+       FROM jobs
+       WHERE salary_min IS NOT NULL AND salary_max IS NOT NULL AND salary_min > 0`
+    ),
+  ]);
+  return {
+    byIndustry: byIndustry.rows,
+    byEmirate: byEmirate.rows,
+    overall: overall.rows[0],
   };
 };
 

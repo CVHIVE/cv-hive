@@ -3,6 +3,7 @@ import * as authController from './auth.controller';
 import { validateRequest } from '../../middleware/validateRequest';
 import { registerSchema, registerEmployerSchema, loginSchema } from './auth.validation';
 import { authenticate } from '../../middleware/authenticate';
+import { sendContactFormEmail } from '../../services/email.service';
 
 const router = Router();
 
@@ -18,5 +19,20 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/change-password', authenticate, authController.changePassword);
 router.delete('/account', authenticate, authController.deleteAccount);
+
+// Contact form (public)
+router.post('/contact', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ success: false, message: 'Name, email, and message are required' });
+    }
+    await sendContactFormEmail(name, email, subject || 'General Enquiry', message);
+    res.json({ success: true, message: 'Message sent successfully' });
+  } catch (error: any) {
+    console.error('Contact form error:', error.message);
+    res.json({ success: true, message: 'Message sent successfully' }); // Don't reveal email failures
+  }
+});
 
 export default router;

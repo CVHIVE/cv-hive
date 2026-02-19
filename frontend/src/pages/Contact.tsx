@@ -3,24 +3,28 @@ import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       toast.error('Please fill in all required fields');
       return;
     }
     setSending(true);
-    // Simulate send (replace with real API when ready)
-    setTimeout(() => {
-      toast.success('Message sent! We\'ll get back to you within 1-2 business days.');
+    try {
+      await api.post('/auth/contact', form);
+      toast.success("Message sent! We'll get back to you within 1-2 business days.");
       setForm({ name: '', email: '', subject: '', message: '' });
+    } catch {
+      toast.error('Failed to send message. Please try emailing us directly.');
+    } finally {
       setSending(false);
-    }, 1000);
+    }
   };
 
   return (

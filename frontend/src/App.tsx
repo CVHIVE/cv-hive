@@ -31,6 +31,8 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
+const SalaryGuide = lazy(() => import('./pages/SalaryGuide'));
+const CareerAdvice = lazy(() => import('./pages/CareerAdvice'));
 const MyApplications = lazy(() => import('./pages/MyApplications'));
 const SavedJobs = lazy(() => import('./pages/SavedJobs'));
 
@@ -71,6 +73,8 @@ function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/salary-guide" element={<SalaryGuide />} />
+      <Route path="/career-advice" element={<CareerAdvice />} />
 
       <Route
         path="/post-job"

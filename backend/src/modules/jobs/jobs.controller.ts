@@ -11,6 +11,15 @@ export const getPlatformStats = async (_req: Request, res: Response) => {
   }
 };
 
+export const getSalaryGuide = async (_req: Request, res: Response) => {
+  try {
+    const data = await jobService.getSalaryGuide();
+    res.json({ success: true, data });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getFeaturedEmployers = async (_req: Request, res: Response) => {
   try {
     const employers = await jobService.getFeaturedEmployers();
@@ -112,6 +121,16 @@ export const getCandidateApplications = async (req: Request, res: Response) => {
     const candidate = await getCandidateId(req);
     const applications = await jobService.getCandidateApplications(candidate);
     res.json({ success: true, data: applications });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const withdrawApplication = async (req: Request, res: Response) => {
+  try {
+    const candidate = await getCandidateId(req);
+    const result = await jobService.withdrawApplication(req.params.applicationId, candidate);
+    res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }

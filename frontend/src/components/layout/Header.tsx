@@ -62,6 +62,7 @@ export default function Header() {
             )}
             <Link to="/companies" className={desktopLinkClass('/companies')}>Companies</Link>
             <Link to="/cv-database" className={desktopLinkClass('/cv-database')}>CV Database</Link>
+            <Link to="/salary-guide" className={desktopLinkClass('/salary-guide')}>Salary Guide</Link>
             <Link to="/pricing" className={desktopLinkClass('/pricing')}>Pricing</Link>
             {isAuthenticated && user?.role === 'ADMIN' && (
               <Link to="/admin" className={desktopLinkClass('/admin')}>Admin</Link>
@@ -169,6 +170,8 @@ export default function Header() {
             )}
             <Link to="/companies" className={navLinkClass('/companies')} onClick={closeMobile}>Companies</Link>
             <Link to="/cv-database" className={navLinkClass('/cv-database')} onClick={closeMobile}>CV Database</Link>
+            <Link to="/salary-guide" className={navLinkClass('/salary-guide')} onClick={closeMobile}>Salary Guide</Link>
+            <Link to="/career-advice" className={navLinkClass('/career-advice')} onClick={closeMobile}>Career Advice</Link>
             <Link to="/pricing" className={navLinkClass('/pricing')} onClick={closeMobile}>Pricing</Link>
 
             {isAuthenticated && user?.role === 'EMPLOYER' && (

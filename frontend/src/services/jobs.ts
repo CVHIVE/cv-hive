@@ -11,6 +11,9 @@ export const jobService = {
   getPlatformStats: () =>
     api.get('/jobs/stats').then((r) => r.data),
 
+  getSalaryGuide: () =>
+    api.get('/jobs/salary-guide').then((r) => r.data),
+
   getFeaturedEmployers: () =>
     api.get('/jobs/featured-employers').then((r) => r.data),
 
@@ -46,6 +49,9 @@ export const jobService = {
 
   getSavedJobs: () =>
     api.get('/jobs/saved/mine').then((r) => r.data),
+
+  withdrawApplication: (applicationId: string) =>
+    api.put(`/jobs/applications/${applicationId}/withdraw`).then((r) => r.data),
 
   updateApplicationStatus: (applicationId: string, status: string, notes?: string) =>
     api.put(`/jobs/applications/${applicationId}/status`, { status, notes }).then((r) => r.data),

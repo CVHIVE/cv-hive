@@ -164,6 +164,20 @@ export function useSavedJobs() {
   });
 }
 
+export function useWithdrawApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (applicationId: string) => jobService.withdrawApplication(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      toast.success('Application withdrawn');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to withdraw application');
+    },
+  });
+}
+
 export function useUpdateApplicationStatus() {
   const queryClient = useQueryClient();
   return useMutation({

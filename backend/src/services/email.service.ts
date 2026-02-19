@@ -66,6 +66,19 @@ export async function sendStatusChangeNotification(
   return sendEmail(candidateEmail, subject, html, userId, 'STATUS_CHANGE');
 }
 
+export async function sendContactFormEmail(
+  name: string, email: string, subject: string, message: string
+) {
+  const { subject: emailSubject, html } = templates.contactFormEmail(name, email, subject, message);
+  return sendEmail(
+    process.env.CONTACT_EMAIL || 'info@cvhive.ae',
+    emailSubject,
+    html,
+    undefined,
+    'CONTACT_FORM'
+  );
+}
+
 export async function sendJobAlertDigest(
   to: string, userId: string, jobs: Array<{ title: string; company: string; emirate: string; id: string }>
 ) {

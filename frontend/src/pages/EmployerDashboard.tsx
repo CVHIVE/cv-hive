@@ -5,11 +5,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import EmployerNav from '../components/employer/EmployerNav';
-import { useEmployerJobs, useCloseJob, usePayForJob, useJobApplications, useUpdateApplicationStatus } from '../hooks/useJobs';
+import { useEmployerJobs, useCloseJob, usePayForJob, useJobApplications, useUpdateApplicationStatus, useUpdateJob } from '../hooks/useJobs';
 import api from '../services/api';
 import { subscriptionService } from '../services/subscriptions';
 import { jobService } from '../services/jobs';
 import toast from 'react-hot-toast';
+import type { CreateJobPayload, JobType, Emirate } from '../types';
+
+const INDUSTRY_OPTIONS = [
+  'Accountancy', 'Admin & Office Support', 'Automotive', 'Aviation & Aerospace',
+  'Cleaning & Facilities', 'Consulting', 'Construction & Engineering', 'Customer Service',
+  'Design & Creative', 'Education', 'Engineering', 'Environmental', 'Finance & Banking',
+  'Government', 'Healthcare', 'Hospitality & Tourism', 'HR & Recruitment', 'Insurance',
+  'Legal', 'Logistics & Supply Chain', 'Manufacturing', 'Marketing & Advertising',
+  'Media & Communications', 'Oil & Gas', 'Procurement & Purchasing', 'Real Estate',
+  'Retail', 'Sales & Business Development', 'Science & Research', 'Security & Safety',
+  'Telecoms', 'Technology',
+];
+const JOB_TYPE_OPTIONS: { value: JobType; label: string }[] = [
+  { value: 'FULL_TIME', label: 'Full Time' }, { value: 'PART_TIME', label: 'Part Time' },
+  { value: 'CONTRACT', label: 'Contract' }, { value: 'FREELANCE', label: 'Freelance' },
+  { value: 'INTERNSHIP', label: 'Internship' },
+];
+const EMIRATE_OPTIONS: { value: Emirate; label: string }[] = [
+  { value: 'DUBAI', label: 'Dubai' }, { value: 'ABU_DHABI', label: 'Abu Dhabi' },
+  { value: 'SHARJAH', label: 'Sharjah' }, { value: 'AJMAN', label: 'Ajman' },
+  { value: 'RAS_AL_KHAIMAH', label: 'Ras Al Khaimah' }, { value: 'FUJAIRAH', label: 'Fujairah' },
+  { value: 'UMM_AL_QUWAIN', label: 'Umm Al Quwain' },
+];
 
 export default function EmployerDashboard() {
   const { data: jobs, isLoading } = useEmployerJobs();
@@ -20,6 +43,9 @@ export default function EmployerDashboard() {
   const [tab, setTab] = useState<'jobs' | 'applications' | 'analytics' | 'subscription'>('jobs');
   const { data: applications } = useJobApplications(selectedJobId || '');
   const { mutate: updateStatus } = useUpdateApplicationStatus();
+  const { mutate: updateJob, isPending: isUpdating } = useUpdateJob();
+  const [editingJob, setEditingJob] = useState<any>(null);
+  const [editForm, setEditForm] = useState<Partial<CreateJobPayload>>({});
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -108,6 +134,29 @@ export default function EmployerDashboard() {
   };
 
   const STATUS_OPTIONS = ['PENDING', 'REVIEWED', 'SHORTLISTED', 'REJECTED', 'HIRED'] as const;
+
+  const openEditModal = (job: any) => {
+    setEditingJob(job);
+    setEditForm({
+      title: job.title,
+      description: job.description,
+      industry: job.industry,
+      jobType: job.job_type,
+      emirate: job.emirate,
+      salaryMin: job.salary_min || undefined,
+      salaryMax: job.salary_max || undefined,
+      experienceMin: job.experience_min || undefined,
+      experienceMax: job.experience_max || undefined,
+      skills: job.skills || '',
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingJob) return;
+    updateJob({ id: editingJob.id, data: editForm }, {
+      onSuccess: () => { setEditingJob(null); },
+    });
+  };
   const STATUS_COLORS: Record<string, string> = {
     PENDING: 'bg-yellow-100 text-yellow-700',
     REVIEWED: 'bg-primary-100 text-primary-700',
@@ -192,6 +241,81 @@ export default function EmployerDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Edit Job Modal */}
+        {editingJob && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold">Edit Job</h2>
+                <button onClick={() => setEditingJob(null)} className="text-gray-400 hover:text-gray-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                  <input className="input w-full" value={editForm.title || ''} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                    <select className="input w-full" value={editForm.industry || ''} onChange={(e) => setEditForm({ ...editForm, industry: e.target.value })}>
+                      <option value="">Select</option>
+                      {INDUSTRY_OPTIONS.map((i) => <option key={i} value={i}>{i}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                    <select className="input w-full" value={editForm.jobType || ''} onChange={(e) => setEditForm({ ...editForm, jobType: e.target.value as JobType })}>
+                      {JOB_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Emirate</label>
+                  <select className="input w-full" value={editForm.emirate || ''} onChange={(e) => setEditForm({ ...editForm, emirate: e.target.value as Emirate })}>
+                    {EMIRATE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Salary Min (AED)</label>
+                    <input type="number" className="input w-full" value={editForm.salaryMin || ''} onChange={(e) => setEditForm({ ...editForm, salaryMin: Number(e.target.value) || undefined })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Salary Max (AED)</label>
+                    <input type="number" className="input w-full" value={editForm.salaryMax || ''} onChange={(e) => setEditForm({ ...editForm, salaryMax: Number(e.target.value) || undefined })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Experience (yrs)</label>
+                    <input type="number" className="input w-full" value={editForm.experienceMin || ''} onChange={(e) => setEditForm({ ...editForm, experienceMin: Number(e.target.value) || undefined })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Experience (yrs)</label>
+                    <input type="number" className="input w-full" value={editForm.experienceMax || ''} onChange={(e) => setEditForm({ ...editForm, experienceMax: Number(e.target.value) || undefined })} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skills (comma-separated)</label>
+                  <input className="input w-full" value={editForm.skills || ''} onChange={(e) => setEditForm({ ...editForm, skills: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea className="input w-full h-40" value={editForm.description || ''} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button onClick={() => setEditingJob(null)} className="btn btn-secondary">Cancel</button>
+                  <button onClick={handleSaveEdit} disabled={isUpdating} className="btn btn-primary">
+                    {isUpdating ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="lg:w-56 flex-shrink-0">
             <div className="lg:sticky lg:top-24">
@@ -317,6 +441,14 @@ export default function EmployerDashboard() {
                       >
                         View Applications
                       </button>
+                      {(job.status === 'ACTIVE' || job.status === 'DRAFT') && (
+                        <button
+                          onClick={() => openEditModal(job)}
+                          className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+                        >
+                          Edit
+                        </button>
+                      )}
                       {job.status === 'DRAFT' && (
                         <button
                           onClick={() => payForJob(job.id)}

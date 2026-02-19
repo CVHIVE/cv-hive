@@ -33,8 +33,8 @@ export default function Footer() {
               <li><Link to="/login" className="hover:text-white transition-colors">Upload CV</Link></li>
               <li><Link to="/jobs" className="hover:text-white transition-colors">Search Jobs</Link></li>
               <li><Link to="/cv-builder" className="hover:text-white transition-colors">CV Builder</Link></li>
-              <li><Link to="/my-applications" className="hover:text-white transition-colors">My Applications</Link></li>
-              <li><Link to="/saved-jobs" className="hover:text-white transition-colors">Saved Jobs</Link></li>
+              <li><Link to="/salary-guide" className="hover:text-white transition-colors">Salary Guide</Link></li>
+              <li><Link to="/career-advice" className="hover:text-white transition-colors">Career Advice</Link></li>
             </ul>
           </div>
           
@@ -53,6 +53,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-5 text-white">Company</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
               <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/career-advice" className="hover:text-white transition-colors">Career Advice</Link></li>
               <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
