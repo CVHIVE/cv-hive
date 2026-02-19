@@ -182,7 +182,7 @@ export default function Signup() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Stepper */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 overflow-x-auto">
             {STEPS.map((label, i) => {
               const stepNum = i + 1;
               const isActive = step === stepNum;
@@ -361,7 +361,7 @@ export default function Signup() {
                     {INDUSTRY_OPTIONS.map((i) => <option key={i} value={i}>{i}</option>)}
                   </select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Min Salary (AED)</label>
                     <input type="number" value={salaryMin} onChange={(e) => setSalaryMin(e.target.value)} className="input" placeholder="e.g. 10000" />

@@ -33,12 +33,12 @@ export default function Home() {
       <Header />
 
       {/* Hero Section with Job Search */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-6">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
             Find Your Dream Job in the UAE
           </h1>
-          <p className="text-xl mb-8 text-blue-100">
+          <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-blue-100">
             Search thousands of jobs across all Emirates. Upload your CV and get discovered.
           </p>
 
@@ -70,7 +70,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="flex justify-center gap-4 mt-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
             <Link to="/signup">
               <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition text-sm">
                 Upload Your CV - Free

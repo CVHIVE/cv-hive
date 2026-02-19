@@ -168,24 +168,24 @@ export default function EmployerDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Employer Dashboard</h1>
-          <Link to="/post-job" className="btn btn-primary">Post a Job</Link>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">Employer Dashboard</h1>
+          <Link to="/post-job" className="btn btn-primary text-center">Post a Job</Link>
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-200 rounded-lg p-1 mb-6 max-w-2xl">
+        <div className="flex overflow-x-auto space-x-1 bg-gray-200 rounded-lg p-1 mb-6 max-w-2xl">
           {(['jobs', 'applications', 'analytics', 'subscription'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition ${
+              className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
                 tab === t ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              {t === 'jobs' ? `My Jobs (${jobs?.length || 0})` :
-               t === 'applications' ? 'Applications' :
-               t === 'analytics' ? 'Analytics' : 'Subscription'}
+              {t === 'jobs' ? `Jobs (${jobs?.length || 0})` :
+               t === 'applications' ? 'Apps' :
+               t === 'analytics' ? 'Analytics' : 'Plan'}
             </button>
           ))}
         </div>
@@ -242,9 +242,9 @@ export default function EmployerDashboard() {
             ) : (
               jobs.map((job: any) => (
                 <div key={job.id} className="card">
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="font-semibold text-lg">{job.title}</h3>
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           job.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
@@ -279,7 +279,7 @@ export default function EmployerDashboard() {
                         )}
                       </div>
                     </div>
-                    <div className="flex space-x-2 ml-4">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => { setSelectedJobId(job.id); setTab('applications'); }}
                         className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200"
@@ -361,7 +361,7 @@ export default function EmployerDashboard() {
                             Response due by {new Date(app.response_deadline).toLocaleDateString()} — respond soon!
                           </div>
                         )}
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold">{app.full_name}</h3>
                             {/* Contact Info */}
@@ -398,7 +398,7 @@ export default function EmployerDashboard() {
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-col items-end space-y-2 ml-4">
+                          <div className="flex flex-row sm:flex-col items-start sm:items-end gap-2">
                             <select
                               value={app.status}
                               onChange={(e) => updateStatus({ applicationId: app.id, status: e.target.value })}

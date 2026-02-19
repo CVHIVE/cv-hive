@@ -85,11 +85,11 @@ export default function EmployerSearch() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Search Candidates</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Search Candidates</h1>
 
         {/* Search Bar */}
         <div className="card mb-8">
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <input
               type="text"
               placeholder="Search by job title or keywords..."
@@ -262,7 +262,7 @@ export default function EmployerSearch() {
                     const revealed = revealedMap[c.id];
                     return (
                       <div key={c.id} className="card hover:shadow-md transition">
-                        <div className="flex items-start space-x-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                           <div className="w-14 h-14 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center text-blue-600 font-bold text-xl">
                             {c.full_name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
@@ -302,7 +302,7 @@ export default function EmployerSearch() {
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-col gap-2 flex-shrink-0">
+                          <div className="flex flex-row sm:flex-col gap-2 flex-shrink-0">
                             <Link to={`/candidates/${c.profile_slug}`}>
                               <button className="btn btn-primary text-sm px-4 w-full">View Profile</button>
                             </Link>

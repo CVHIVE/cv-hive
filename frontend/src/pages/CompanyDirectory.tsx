@@ -32,7 +32,7 @@ export default function CompanyDirectory() {
 
       <section className="bg-gradient-to-r from-purple-600 to-blue-700 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-3">Company A-Z</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3">Company A-Z</h1>
           <p className="text-lg text-purple-100">
             Browse all registered UAE companies
           </p>
@@ -45,7 +45,7 @@ export default function CompanyDirectory() {
           <div className="flex flex-wrap justify-center gap-1 mb-8">
             <button
               onClick={() => setLetter('')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition ${
                 letter === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -55,7 +55,7 @@ export default function CompanyDirectory() {
               <button
                 key={l}
                 onClick={() => setLetter(l)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition ${
                   letter === l ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >

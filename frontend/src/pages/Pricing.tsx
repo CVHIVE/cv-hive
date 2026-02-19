@@ -115,7 +115,7 @@ export default function Pricing() {
 
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
           <p className="text-xl text-blue-100">
             Free for job seekers. Flexible plans for employers.
           </p>
@@ -132,7 +132,7 @@ export default function Pricing() {
                   key={plan.name}
                   className={`rounded-2xl p-8 flex flex-col relative ${
                     plan.highlighted
-                      ? 'bg-blue-600 text-white shadow-xl scale-105'
+                      ? 'bg-blue-600 text-white shadow-xl md:scale-105'
                       : 'bg-white border border-gray-200 shadow-sm'
                   }`}
                 >

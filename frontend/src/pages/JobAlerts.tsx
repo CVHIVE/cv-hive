@@ -63,8 +63,8 @@ export default function JobAlerts() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Job Alerts</h1>
+        <div className="flex justify-between items-center gap-3 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Job Alerts</h1>
           <button onClick={() => setShowForm(!showForm)} className="btn btn-primary">
             {showForm ? 'Cancel' : 'Create Alert'}
           </button>
@@ -128,9 +128,9 @@ export default function JobAlerts() {
           <div className="space-y-4">
             {alerts.map((alert: any) => (
               <div key={alert.id} className={`card ${!alert.is_active ? 'opacity-60' : ''}`}>
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="font-semibold">{alert.title || 'All Jobs'}</h3>
                       <span className={`text-xs px-2 py-0.5 rounded ${alert.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                         {alert.is_active ? 'Active' : 'Paused'}
@@ -146,7 +146,7 @@ export default function JobAlerts() {
                       {alert.salary_min && <span>Min Salary: AED {alert.salary_min.toLocaleString()}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
+                  <div className="flex items-center space-x-2">
                     <button
                       onClick={() => toggleMutation.mutate({ id: alert.id, isActive: !alert.is_active })}
                       className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"

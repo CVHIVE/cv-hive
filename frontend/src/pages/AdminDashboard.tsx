@@ -171,18 +171,18 @@ export default function AdminDashboard() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Admin Dashboard</h1>
         <p className="text-gray-600 mb-8">
           {users.length} users &middot; {candidates.length} candidates &middot; {employers.length} employers &middot; {jobs.length} jobs
         </p>
 
         {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-200 rounded-lg p-1 mb-6">
+        <div className="flex overflow-x-auto space-x-1 bg-gray-200 rounded-lg p-1 mb-6">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => { setTab(t.key); setSearch(''); }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition ${
+              className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
                 tab === t.key
                   ? 'bg-white text-blue-600 shadow'
                   : 'text-gray-600 hover:text-gray-900'
