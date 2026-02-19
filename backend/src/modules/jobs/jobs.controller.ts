@@ -2,6 +2,24 @@ import { Request, Response } from 'express';
 import * as jobService from './jobs.service';
 import { getSimilarJobs } from '../../services/recommendations.service';
 
+export const getPlatformStats = async (_req: Request, res: Response) => {
+  try {
+    const stats = await jobService.getPlatformStats();
+    res.json({ success: true, data: stats });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getFeaturedEmployers = async (_req: Request, res: Response) => {
+  try {
+    const employers = await jobService.getFeaturedEmployers();
+    res.json({ success: true, data: employers });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const createJob = async (req: Request, res: Response) => {
   try {
     const employer = await getEmployerId(req);

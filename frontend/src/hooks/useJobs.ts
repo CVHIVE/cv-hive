@@ -17,6 +17,22 @@ export function useRecentJobs() {
   });
 }
 
+export function usePlatformStats() {
+  return useQuery({
+    queryKey: ['platform', 'stats'],
+    queryFn: () => jobService.getPlatformStats(),
+    staleTime: 5 * 60 * 1000, // cache 5 minutes
+  });
+}
+
+export function useFeaturedEmployers() {
+  return useQuery({
+    queryKey: ['platform', 'featured-employers'],
+    queryFn: () => jobService.getFeaturedEmployers(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useJob(id: string) {
   return useQuery({
     queryKey: ['jobs', id],

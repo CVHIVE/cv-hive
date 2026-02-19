@@ -407,6 +407,37 @@ export const getRecentJobs = async (limit: number = 6) => {
   return result.rows;
 };
 
+export const getPlatformStats = async () => {
+  const [jobs, candidates, employers, industries] = await Promise.all([
+    db.query(`SELECT COUNT(*) as count FROM jobs WHERE status = 'ACTIVE'`),
+    db.query(`SELECT COUNT(*) as count FROM candidates WHERE profile_visible = TRUE`),
+    db.query(`SELECT COUNT(*) as count FROM employers`),
+    db.query(
+      `SELECT industry, COUNT(*) as count FROM jobs WHERE status = 'ACTIVE' AND industry IS NOT NULL
+       GROUP BY industry ORDER BY count DESC LIMIT 12`
+    ),
+  ]);
+  return {
+    activeJobs: parseInt(jobs.rows[0].count),
+    candidates: parseInt(candidates.rows[0].count),
+    employers: parseInt(employers.rows[0].count),
+    industries: industries.rows.map((r: any) => ({ name: r.industry, count: parseInt(r.count) })),
+  };
+};
+
+export const getFeaturedEmployers = async () => {
+  const result = await db.query(
+    `SELECT e.company_name, e.company_slug, e.industry, e.company_logo_url,
+            COUNT(j.id) as job_count
+     FROM employers e
+     LEFT JOIN jobs j ON j.employer_id = e.id AND j.status = 'ACTIVE'
+     GROUP BY e.id
+     ORDER BY job_count DESC, e.created_at ASC
+     LIMIT 12`
+  );
+  return result.rows;
+};
+
 export const payForJob = async (jobId: string, employerId: string) => {
   // Verify ownership and DRAFT status
   const job = await db.query(

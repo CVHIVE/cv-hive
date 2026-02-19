@@ -8,6 +8,12 @@ export const jobService = {
   getRecentJobs: () =>
     api.get('/jobs/recent').then((r) => r.data),
 
+  getPlatformStats: () =>
+    api.get('/jobs/stats').then((r) => r.data),
+
+  getFeaturedEmployers: () =>
+    api.get('/jobs/featured-employers').then((r) => r.data),
+
   getJob: (id: string) =>
     api.get(`/jobs/${id}`).then((r) => r.data),
 

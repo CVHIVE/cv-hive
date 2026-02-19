@@ -8,6 +8,8 @@ import { createJobSchema, updateJobSchema, applyJobSchema, updateApplicationStat
 const router = Router();
 
 // Public routes
+router.get('/stats', jobController.getPlatformStats);
+router.get('/featured-employers', jobController.getFeaturedEmployers);
 router.get('/recent', jobController.getRecentJobs);
 router.get('/search', jobController.searchJobs);
 router.get('/:id/similar', jobController.getSimilarJobsHandler);
