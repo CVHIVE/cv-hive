@@ -67,4 +67,14 @@ export const jobService = {
 
   verifyJobPayment: (sessionId: string) =>
     api.post('/jobs/verify-payment', { sessionId }).then((r) => r.data),
+
+  // Saved searches
+  saveSearch: (name: string, filters: any) =>
+    api.post('/jobs/searches/save', { name, filters }).then((r) => r.data),
+
+  getSavedSearches: () =>
+    api.get('/jobs/searches/mine').then((r) => r.data),
+
+  deleteSavedSearch: (searchId: string) =>
+    api.delete(`/jobs/searches/${searchId}`).then((r) => r.data),
 };

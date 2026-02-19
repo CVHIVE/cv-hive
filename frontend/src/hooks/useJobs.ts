@@ -201,3 +201,41 @@ export function useApplicationStatusHistory(applicationId: string) {
     enabled: !!applicationId,
   });
 }
+
+// ── Saved Searches ─────────────────────────────────────
+
+export function useSavedSearches() {
+  return useQuery({
+    queryKey: ['saved-searches'],
+    queryFn: () => jobService.getSavedSearches(),
+  });
+}
+
+export function useSaveSearch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ name, filters }: { name: string; filters: any }) =>
+      jobService.saveSearch(name, filters),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      toast.success('Search saved!');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to save search');
+    },
+  });
+}
+
+export function useDeleteSavedSearch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (searchId: string) => jobService.deleteSavedSearch(searchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      toast.success('Saved search removed');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to delete');
+    },
+  });
+}

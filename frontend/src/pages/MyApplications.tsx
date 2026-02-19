@@ -4,6 +4,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import CandidateNav from '../components/candidate/CandidateNav';
 import { useCandidateApplications, useWithdrawApplication } from '../hooks/useJobs';
+import { jobUrl } from '../utils/jobSlug';
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-yellow-50 text-yellow-700',
@@ -77,7 +78,7 @@ export default function MyApplications() {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <Link to={`/jobs/${app.job_id}`} className="font-semibold text-primary hover:underline text-[15px]">
+                      <Link to={jobUrl({ id: app.job_id, title: app.job_title, emirate: app.emirate })} className="font-semibold text-primary hover:underline text-[15px]">
                         {app.job_title}
                       </Link>
                       <p className="text-gray-600 text-sm mt-0.5">{app.company_name}</p>

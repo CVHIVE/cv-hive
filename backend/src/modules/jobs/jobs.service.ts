@@ -706,3 +706,31 @@ export const getEmployerResponseMetricsByJobId = async (jobId: string) => {
   if (result.rows.length === 0) throw new Error('Employer not found');
   return result.rows[0];
 };
+
+// ── Saved Searches ─────────────────────────────────────
+
+export const saveSearch = async (candidateId: string, name: string, filters: any) => {
+  const id = uuidv4();
+  const result = await db.query(
+    `INSERT INTO saved_searches (id, candidate_id, name, filters) VALUES ($1, $2, $3, $4) RETURNING *`,
+    [id, candidateId, name, JSON.stringify(filters)]
+  );
+  return result.rows[0];
+};
+
+export const getSavedSearches = async (candidateId: string) => {
+  const result = await db.query(
+    `SELECT * FROM saved_searches WHERE candidate_id = $1 ORDER BY created_at DESC`,
+    [candidateId]
+  );
+  return result.rows;
+};
+
+export const deleteSavedSearch = async (searchId: string, candidateId: string) => {
+  const result = await db.query(
+    `DELETE FROM saved_searches WHERE id = $1 AND candidate_id = $2 RETURNING id`,
+    [searchId, candidateId]
+  );
+  if (result.rows.length === 0) throw new Error('Saved search not found');
+  return { deleted: true };
+};

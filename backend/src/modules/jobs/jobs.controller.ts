@@ -249,6 +249,42 @@ export const repostJob = async (req: Request, res: Response) => {
   }
 };
 
+// ── Saved Searches ─────────────────────────────────────
+
+export const saveSearch = async (req: Request, res: Response) => {
+  try {
+    const candidate = await getCandidateId(req);
+    const { name, filters } = req.body;
+    if (!name || !filters) {
+      return res.status(400).json({ success: false, message: 'Name and filters are required' });
+    }
+    const saved = await jobService.saveSearch(candidate, name, filters);
+    res.status(201).json({ success: true, data: saved });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getSavedSearches = async (req: Request, res: Response) => {
+  try {
+    const candidate = await getCandidateId(req);
+    const searches = await jobService.getSavedSearches(candidate);
+    res.json({ success: true, data: searches });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteSavedSearch = async (req: Request, res: Response) => {
+  try {
+    const candidate = await getCandidateId(req);
+    const result = await jobService.deleteSavedSearch(req.params.searchId, candidate);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // Helpers to get employer/candidate ID from the authenticated user
 import db from '../../config/database';
 

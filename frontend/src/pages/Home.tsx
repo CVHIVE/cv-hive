@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { jobUrl } from '../utils/jobSlug';
 import { useRecentJobs, usePlatformStats, useFeaturedEmployers } from '../hooks/useJobs';
 import type { Emirate } from '../types';
 
@@ -133,7 +134,7 @@ export default function Home() {
               {recentJobs.map((job: any) => (
                 <Link
                   key={job.id}
-                  to={`/jobs/${job.id}`}
+                  to={jobUrl(job)}
                   className="bg-white border border-gray-200 rounded-lg p-5 hover:border-primary/40 hover:shadow-sm transition-all block"
                 >
                   <h3 className="font-semibold text-primary mb-1 text-[15px]">{job.title}</h3>

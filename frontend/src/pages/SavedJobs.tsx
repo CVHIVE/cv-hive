@@ -4,6 +4,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import CandidateNav from '../components/candidate/CandidateNav';
 import { useSavedJobs, useUnsaveJob } from '../hooks/useJobs';
+import { jobUrl } from '../utils/jobSlug';
 
 export default function SavedJobs() {
   const { data: savedJobs, isLoading } = useSavedJobs();
@@ -57,7 +58,7 @@ export default function SavedJobs() {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <Link to={`/jobs/${job.job_id || job.id}`} className="font-semibold text-primary hover:underline text-[15px]">
+                      <Link to={jobUrl({ id: job.job_id || job.id, title: job.title || job.job_title, emirate: job.emirate })} className="font-semibold text-primary hover:underline text-[15px]">
                         {job.title || job.job_title}
                       </Link>
                       <p className="text-gray-600 text-sm mt-0.5">{job.company_name}</p>

@@ -61,6 +61,7 @@ function AppRoutes() {
       <Route path="/candidates/:slug" element={<CandidateProfile />} />
       <Route path="/jobs" element={<JobSearch />} />
       <Route path="/jobs/:id" element={<JobDetail />} />
+      {/* Support slugified URLs: /jobs/senior-developer-dubai-{uuid} */}
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />

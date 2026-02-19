@@ -7,6 +7,7 @@ import CandidateNav from '../components/candidate/CandidateNav';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
 import { useCandidateApplications, useSavedJobs } from '../hooks/useJobs';
+import { jobUrl } from '../utils/jobSlug';
 import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
 import type { UpdateCandidatePayload, VisaStatus, Emirate, AvailabilityStatus } from '../types';
@@ -409,7 +410,7 @@ export default function CandidateDashboard() {
               {applications.slice(0, 5).map((app: any) => (
                 <div key={app.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                   <div>
-                    <Link to={`/jobs/${app.job_id}`} className="font-medium text-primary hover:underline">
+                    <Link to={jobUrl({ id: app.job_id, title: app.job_title, emirate: app.emirate })} className="font-medium text-primary hover:underline">
                       {app.job_title}
                     </Link>
                     <p className="text-sm text-gray-500">{app.company_name} &middot; {app.emirate?.replace(/_/g, ' ')}</p>
@@ -453,7 +454,7 @@ export default function CandidateDashboard() {
               {savedJobs.slice(0, 5).map((job: any) => (
                 <div key={job.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                   <div>
-                    <Link to={`/jobs/${job.id}`} className="font-medium text-primary hover:underline">
+                    <Link to={jobUrl(job)} className="font-medium text-primary hover:underline">
                       {job.title}
                     </Link>
                     <p className="text-sm text-gray-500">{job.company_name} &middot; {job.emirate?.replace(/_/g, ' ')}</p>

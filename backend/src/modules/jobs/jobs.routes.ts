@@ -40,4 +40,9 @@ router.post('/:id/save', authenticate, authorize('CANDIDATE'), jobController.sav
 router.delete('/:id/save', authenticate, authorize('CANDIDATE'), jobController.unsaveJob);
 router.get('/saved/mine', authenticate, authorize('CANDIDATE'), jobController.getSavedJobs);
 
+// Saved searches
+router.post('/searches/save', authenticate, authorize('CANDIDATE'), jobController.saveSearch);
+router.get('/searches/mine', authenticate, authorize('CANDIDATE'), jobController.getSavedSearches);
+router.delete('/searches/:searchId', authenticate, authorize('CANDIDATE'), jobController.deleteSavedSearch);
+
 export default router;

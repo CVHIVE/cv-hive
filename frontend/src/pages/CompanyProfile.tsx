@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { jobUrl } from '../utils/jobSlug';
 import api from '../services/api';
 
 export default function CompanyProfile() {
@@ -115,7 +116,7 @@ export default function CompanyProfile() {
         ) : (
           <div className="space-y-4">
             {company.jobs.map((job: any) => (
-              <Link key={job.id} to={`/jobs/${job.id}`} className="card block hover:shadow-md transition">
+              <Link key={job.id} to={jobUrl(job)} className="card block hover:shadow-md transition">
                 <h3 className="font-semibold text-lg text-primary">{job.title}</h3>
                 <div className="flex flex-wrap gap-x-4 text-sm text-gray-500 mt-1">
                   <span>{job.emirate?.replace(/_/g, ' ')}</span>

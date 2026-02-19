@@ -6,10 +6,12 @@ import Footer from '../components/layout/Footer';
 import { useQuery } from '@tanstack/react-query';
 import { useJob, useApplyToJob, useSaveJob } from '../hooks/useJobs';
 import { useAuthStore } from '../store/authStore';
+import { extractJobId, jobUrl } from '../utils/jobSlug';
 import api from '../services/api';
 
 export default function JobDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id: slugParam } = useParams<{ id: string }>();
+  const id = extractJobId(slugParam || '');
   const { data: job, isLoading } = useJob(id || '');
   const { mutate: apply, isPending: isApplying } = useApplyToJob();
   const { mutate: save } = useSaveJob();
@@ -57,6 +59,44 @@ export default function JobDetail() {
       <Helmet>
         <title>{job.title} at {job.company_name} | CV Hive</title>
         <meta name="description" content={`Apply for ${job.title} at ${job.company_name} in ${job.emirate?.replace(/_/g, ' ')}. View salary, requirements, and apply on CV Hive.`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'JobPosting',
+            title: job.title,
+            description: job.description,
+            datePosted: job.created_at,
+            ...(job.expires_at && { validThrough: job.expires_at }),
+            employmentType: job.job_type === 'FULL_TIME' ? 'FULL_TIME' : job.job_type === 'PART_TIME' ? 'PART_TIME' : job.job_type === 'CONTRACT' ? 'CONTRACTOR' : job.job_type === 'INTERNSHIP' ? 'INTERN' : 'OTHER',
+            hiringOrganization: {
+              '@type': 'Organization',
+              name: job.company_name,
+              sameAs: `${window.location.origin}/companies/${job.company_slug || ''}`,
+            },
+            jobLocation: {
+              '@type': 'Place',
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: job.emirate?.replace(/_/g, ' '),
+                addressCountry: 'AE',
+              },
+            },
+            ...(!job.salary_hidden && job.salary_min && job.salary_max && {
+              baseSalary: {
+                '@type': 'MonetaryAmount',
+                currency: 'AED',
+                value: {
+                  '@type': 'QuantitativeValue',
+                  minValue: job.salary_min,
+                  maxValue: job.salary_max,
+                  unitText: 'MONTH',
+                },
+              },
+            }),
+            ...(job.industry && { industry: job.industry }),
+            ...(job.skills && { skills: job.skills }),
+          })}
+        </script>
       </Helmet>
       <Header />
 
@@ -245,7 +285,7 @@ export default function JobDetail() {
             <h2 className="text-2xl font-bold mb-4">Similar Jobs</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {similarJobs.map((sj: any) => (
-                <Link key={sj.id} to={`/jobs/${sj.id}`} className="card hover:shadow-md transition block">
+                <Link key={sj.id} to={jobUrl(sj)} className="card hover:shadow-md transition block">
                   <h3 className="font-semibold text-primary">{sj.title}</h3>
                   <p className="text-sm text-gray-600">{sj.company_name}</p>
                   <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 mt-1">

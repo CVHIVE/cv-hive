@@ -224,6 +224,14 @@ async function seed() {
       created_at TIMESTAMP DEFAULT NOW(),
       UNIQUE(employer_id, candidate_id)
     );
+
+    CREATE TABLE IF NOT EXISTS saved_searches (
+      id UUID PRIMARY KEY,
+      candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      filters JSONB NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
   `);
 
   console.log('Tables created.');

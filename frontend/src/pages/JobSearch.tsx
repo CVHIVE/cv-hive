@@ -3,7 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { useSearchJobs } from '../hooks/useJobs';
+import { useSearchJobs, useSavedSearches, useSaveSearch, useDeleteSavedSearch } from '../hooks/useJobs';
+import { useAuthStore } from '../store/authStore';
+import { jobUrl } from '../utils/jobSlug';
 import type { JobSearchFilters, Emirate, JobType } from '../types';
 
 const INDUSTRY_OPTIONS = [
@@ -49,6 +51,8 @@ export default function JobSearch() {
   const [searchParams] = useSearchParams();
   const initialTitle = searchParams.get('title') || '';
   const initialEmirate = searchParams.get('emirate') || '';
+  const { isAuthenticated, user } = useAuthStore();
+  const isCandidate = isAuthenticated && user?.role === 'CANDIDATE';
 
   const [filters, setFilters] = useState<JobSearchFilters>({
     title: initialTitle || undefined,
@@ -57,11 +61,35 @@ export default function JobSearch() {
     limit: 20,
   });
   const [titleInput, setTitleInput] = useState(initialTitle);
+  const [saveSearchName, setSaveSearchName] = useState('');
+  const [showSaveInput, setShowSaveInput] = useState(false);
+  const [showSavedSearches, setShowSavedSearches] = useState(false);
   const { data, isLoading } = useSearchJobs(filters);
+  const { data: savedSearches } = useSavedSearches();
+  const { mutate: saveSearch, isPending: isSaving } = useSaveSearch();
+  const { mutate: deleteSearch } = useDeleteSavedSearch();
 
   const handleSearch = () => {
     setFilters({ ...filters, title: titleInput || undefined, page: 1 });
   };
+
+  const handleSaveSearch = () => {
+    if (!saveSearchName.trim()) return;
+    const { page, limit, ...filterData } = filters;
+    if (titleInput) filterData.title = titleInput;
+    saveSearch({ name: saveSearchName.trim(), filters: filterData }, {
+      onSuccess: () => { setShowSaveInput(false); setSaveSearchName(''); },
+    });
+  };
+
+  const handleLoadSearch = (search: any) => {
+    const loaded = search.filters;
+    setFilters({ ...loaded, page: 1, limit: 20 });
+    setTitleInput(loaded.title || '');
+    setShowSavedSearches(false);
+  };
+
+  const hasActiveFilters = filters.title || filters.industry || filters.emirate || filters.jobType || filters.salaryMin || (filters as any).postedWithin || (filters as any).sort;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -182,6 +210,77 @@ export default function JobSearch() {
                 >
                   Clear Filters
                 </button>
+
+                {/* Save & Load Searches */}
+                {isCandidate && (
+                  <div className="border-t pt-4 space-y-2">
+                    {hasActiveFilters && !showSaveInput && (
+                      <button
+                        onClick={() => setShowSaveInput(true)}
+                        className="btn btn-primary w-full text-sm flex items-center justify-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                        Save This Search
+                      </button>
+                    )}
+
+                    {showSaveInput && (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          className="input text-sm"
+                          placeholder="Name this search..."
+                          value={saveSearchName}
+                          onChange={(e) => setSaveSearchName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveSearch()}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={handleSaveSearch} disabled={isSaving} className="btn btn-primary text-xs flex-1">
+                            {isSaving ? 'Saving...' : 'Save'}
+                          </button>
+                          <button onClick={() => { setShowSaveInput(false); setSaveSearchName(''); }} className="btn btn-secondary text-xs flex-1">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {savedSearches && savedSearches.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() => setShowSavedSearches(!showSavedSearches)}
+                          className="btn btn-secondary w-full text-sm flex items-center justify-center gap-1.5"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                          Saved Searches ({savedSearches.length})
+                        </button>
+
+                        {showSavedSearches && (
+                          <div className="mt-2 space-y-1.5">
+                            {savedSearches.map((s: any) => (
+                              <div key={s.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                                <button
+                                  onClick={() => handleLoadSearch(s)}
+                                  className="text-sm text-primary hover:underline font-medium truncate flex-1 text-left"
+                                >
+                                  {s.name}
+                                </button>
+                                <button
+                                  onClick={() => deleteSearch(s.id)}
+                                  className="text-gray-400 hover:text-red-500 ml-2 flex-shrink-0"
+                                  title="Delete"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -206,7 +305,7 @@ export default function JobSearch() {
 
                 <div className="space-y-4">
                   {data?.jobs.map((job: any) => (
-                    <Link key={job.id} to={`/jobs/${job.id}`} className="block">
+                    <Link key={job.id} to={jobUrl(job)} className="block">
                       <div className="card hover:shadow-md transition">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
