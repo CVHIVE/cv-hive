@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import CandidateNav from '../components/candidate/CandidateNav';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
 import { useCandidateApplications, useSavedJobs } from '../hooks/useJobs';
@@ -93,6 +94,16 @@ export default function CandidateDashboard() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <aside className="lg:w-56 flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <CandidateNav />
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <div className="flex-1 min-w-0">
         <h1 className="text-3xl font-bold mb-8">
           Welcome back, {p?.full_name || 'Candidate'}!
         </h1>
@@ -127,18 +138,52 @@ export default function CandidateDashboard() {
 
         {/* Profile Completeness */}
         <div className="card mb-8">
-          <h3 className="font-semibold mb-4">Profile Completeness</h3>
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Profile Completeness</h3>
+            <span className="text-sm font-bold text-primary">{p?.completeness_score || 0}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
             <div
-              className="bg-primary h-2 rounded-full transition-all"
+              className={`h-2.5 rounded-full transition-all ${
+                (p?.completeness_score || 0) >= 80 ? 'bg-green-500' :
+                (p?.completeness_score || 0) >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}
               style={{ width: `${p?.completeness_score || 0}%` }}
             />
           </div>
-          <p className="text-sm text-gray-600">
-            {(p?.completeness_score || 0) < 100
-              ? 'Complete your profile to increase visibility to employers.'
-              : 'Your profile is complete!'}
-          </p>
+          {(p?.completeness_score || 0) < 100 && (() => {
+            const missing: { label: string; action: string }[] = [];
+            if (!p?.phone) missing.push({ label: 'Add phone number', action: 'phone' });
+            if (!p?.job_title) missing.push({ label: 'Add job title', action: 'jobTitle' });
+            if (!p?.visa_status) missing.push({ label: 'Set visa status', action: 'visa' });
+            if (!p?.current_emirate) missing.push({ label: 'Set your location', action: 'emirate' });
+            if (p?.total_experience_years == null) missing.push({ label: 'Add experience', action: 'experience' });
+            if (!p?.cv_url) missing.push({ label: 'Upload your CV', action: 'cv' });
+            if (!p?.availability_status) missing.push({ label: 'Set availability', action: 'availability' });
+            if (missing.length === 0) return null;
+            return (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500 mb-2">Complete these to boost your visibility:</p>
+                <div className="flex flex-wrap gap-2">
+                  {missing.map((m) => (
+                    <button
+                      key={m.action}
+                      onClick={m.action === 'cv' ? () => fileInputRef.current?.click() : startEditing}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          {(p?.completeness_score || 0) >= 100 && (
+            <p className="text-sm text-green-600 font-medium">Your profile is complete!</p>
+          )}
         </div>
 
         {/* Profile Details / Edit Form */}
@@ -446,6 +491,8 @@ export default function CandidateDashboard() {
 
         {/* Change Password */}
         <ChangePasswordSection />
+          </div>
+        </div>
       </div>
     </div>
   );

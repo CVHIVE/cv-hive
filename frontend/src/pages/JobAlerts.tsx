@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
+import CandidateNav from '../components/candidate/CandidateNav';
 import { jobAlertService } from '../services/jobAlerts';
 import toast from 'react-hot-toast';
 
@@ -62,7 +63,14 @@ export default function JobAlerts() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="lg:w-56 flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <CandidateNav />
+            </div>
+          </aside>
+          <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center gap-3 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">Job Alerts</h1>
           <button onClick={() => setShowForm(!showForm)} className="btn btn-primary">
@@ -165,6 +173,8 @@ export default function JobAlerts() {
             ))}
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -682,10 +682,10 @@ export default function CVBuilder() {
       <Header />
 
       {/* Hero */}
-      <section className="bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 text-white py-10">
+      <section className="bg-slate-900 text-white py-10">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Professional CV Builder</h1>
-          <p className="text-slate-300 text-base">
+          <p className="text-gray-400 text-base">
             Build a UAE-standard CV with a modern template &mdash; ready for Gulf employers
           </p>
         </div>

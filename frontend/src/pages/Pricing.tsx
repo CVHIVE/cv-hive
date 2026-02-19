@@ -118,16 +118,10 @@ export default function Pricing() {
       </Helmet>
       <Header />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-800 to-primary text-white py-16">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-accent rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-sm font-medium text-white/90">Pricing</span>
-          </span>
+      <section className="bg-slate-900 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">Simple, transparent pricing</h1>
-          <p className="text-xl text-white/70">
+          <p className="text-xl text-gray-400">
             Free for job seekers. Flexible plans for employers.
           </p>
         </div>

@@ -35,10 +35,10 @@ export default function CompanyDirectory() {
       </Helmet>
       <Header />
 
-      <section className="bg-gradient-to-r from-purple-600 to-blue-700 text-white py-12">
+      <section className="bg-slate-900 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">Company A-Z</h1>
-          <p className="text-lg text-purple-100">
+          <p className="text-lg text-gray-400">
             Browse all registered UAE companies
           </p>
         </div>

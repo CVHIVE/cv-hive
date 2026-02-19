@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import CandidateNav from '../components/candidate/CandidateNav';
 import { useCandidateApplications } from '../hooks/useJobs';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -36,7 +37,14 @@ export default function MyApplications() {
       <Header />
 
       <main className="flex-1 py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="lg:w-56 flex-shrink-0">
+              <div className="lg:sticky lg:top-24">
+                <CandidateNav />
+              </div>
+            </aside>
+            <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold">My Applications</h1>
             <Link to="/jobs" className="text-primary text-sm font-medium hover:underline">
@@ -95,6 +103,8 @@ export default function MyApplications() {
               ))}
             </div>
           )}
+            </div>
+          </div>
         </div>
       </main>
 
