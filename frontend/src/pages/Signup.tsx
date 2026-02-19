@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { useRegister, useLogout } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
 import { candidateService } from '../services/candidates';
@@ -193,7 +194,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
         <title>Sign Up — Free | CV Hive</title>
         <meta name="description" content="Create your free CV Hive account. Upload your CV and start applying to jobs across the UAE." />
@@ -529,6 +530,7 @@ export default function Signup() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

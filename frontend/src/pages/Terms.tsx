@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 
 export default function Terms() {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Terms & Conditions | CV Hive</title>
+        <meta name="description" content="CV Hive terms and conditions of use for job seekers and employers in the UAE." />
+      </Helmet>
       <Header />
 
       <div className="flex-1 max-w-4xl mx-auto px-4 py-12">

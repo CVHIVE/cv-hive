@@ -1,4 +1,5 @@
-﻿import Logo from '../common/Logo';
+﻿import { Link } from 'react-router-dom';
+import Logo from '../common/Logo';
 
 export default function Footer() {
   return (
@@ -28,32 +29,32 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-5 text-white">For Job Seekers</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
-              <li><a href="/signup" className="hover:text-white transition-colors">Create Profile</a></li>
-              <li><a href="/login" className="hover:text-white transition-colors">Upload CV</a></li>
-              <li><a href="/jobs" className="hover:text-white transition-colors">Search Jobs</a></li>
-              <li><a href="/cv-builder" className="hover:text-white transition-colors">CV Builder</a></li>
-              <li><a href="/my-applications" className="hover:text-white transition-colors">My Applications</a></li>
-              <li><a href="/saved-jobs" className="hover:text-white transition-colors">Saved Jobs</a></li>
+              <li><Link to="/signup" className="hover:text-white transition-colors">Create Profile</Link></li>
+              <li><Link to="/login" className="hover:text-white transition-colors">Upload CV</Link></li>
+              <li><Link to="/jobs" className="hover:text-white transition-colors">Search Jobs</Link></li>
+              <li><Link to="/cv-builder" className="hover:text-white transition-colors">CV Builder</Link></li>
+              <li><Link to="/my-applications" className="hover:text-white transition-colors">My Applications</Link></li>
+              <li><Link to="/saved-jobs" className="hover:text-white transition-colors">Saved Jobs</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-semibold mb-5 text-white">For Employers</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
-              <li><a href="/search" className="hover:text-white transition-colors">Search Candidates</a></li>
-              <li><a href="/pricing" className="hover:text-white transition-colors">Pricing</a></li>
-              <li><a href="/post-job" className="hover:text-white transition-colors">Post a Job</a></li>
-              <li><a href="/register-employer" className="hover:text-white transition-colors">Create Account</a></li>
+              <li><Link to="/search" className="hover:text-white transition-colors">Search Candidates</Link></li>
+              <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link to="/post-job" className="hover:text-white transition-colors">Post a Job</Link></li>
+              <li><Link to="/register-employer" className="hover:text-white transition-colors">Create Account</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-semibold mb-5 text-white">Company</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
-              <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-              <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+              <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </div>

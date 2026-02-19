@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { usePublicProfile } from '../hooks/useCandidates';
 import { useAuthStore } from '../store/authStore';
 import { candidateService } from '../services/candidates';
@@ -32,10 +34,14 @@ export default function CandidateProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>{profile ? `${profile.full_name} | CV Hive` : 'Candidate Profile | CV Hive'}</title>
+        <meta name="description" content="View candidate profile on CV Hive." />
+      </Helmet>
       <Header />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         {isLoading && (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
@@ -143,6 +149,7 @@ export default function CandidateProfile() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

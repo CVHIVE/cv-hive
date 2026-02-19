@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { useCreateJob } from '../hooks/useJobs';
 import { jobService } from '../services/jobs';
 import toast from 'react-hot-toast';
@@ -75,9 +77,13 @@ export default function PostJob() {
   // Payment step
   if (createdJobId) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Helmet>
+          <title>Post a Job | CV Hive</title>
+          <meta name="description" content="Post a job listing on CV Hive and reach thousands of UAE job seekers." />
+        </Helmet>
         <Header />
-        <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-1">
           <div className="card text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,12 +141,17 @@ export default function PostJob() {
             </button>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Post a Job | CV Hive</title>
+        <meta name="description" content="Post a job listing on CV Hive and reach thousands of UAE job seekers." />
+      </Helmet>
       <Header />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -302,6 +313,7 @@ export default function PostJob() {
           </div>
         </form>
       </div>
+      <Footer />
     </div>
   );
 }

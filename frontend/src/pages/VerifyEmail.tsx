@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { authService } from '../services/auth';
 import { subscriptionService } from '../services/subscriptions';
 import toast from 'react-hot-toast';
@@ -77,7 +79,11 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Verify Email | CV Hive</title>
+        <meta name="description" content="Verify your CV Hive email address to activate your account." />
+      </Helmet>
       <Header />
       <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
@@ -183,6 +189,7 @@ export default function VerifyEmail() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

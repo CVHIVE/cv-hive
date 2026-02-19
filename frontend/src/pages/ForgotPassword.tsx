@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
 
@@ -23,7 +25,11 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Forgot Password | CV Hive</title>
+        <meta name="description" content="Reset your CV Hive account password." />
+      </Helmet>
       <Header />
       <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
@@ -68,6 +74,7 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

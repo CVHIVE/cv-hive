@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import EmployerNav from '../components/employer/EmployerNav';
 import { useSearchCandidates } from '../hooks/useCandidates';
 import { candidateService } from '../services/candidates';
 import toast from 'react-hot-toast';
@@ -81,10 +84,21 @@ export default function EmployerSearch() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Search Candidates | CV Hive</title>
+        <meta name="description" content="Search and filter CV Hive's candidate database to find the right talent for your roles." />
+      </Helmet>
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="lg:w-56 flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <EmployerNav />
+            </div>
+          </aside>
+          <div className="flex-1 min-w-0">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Search Candidates</h1>
 
         {/* Search Bar */}
@@ -352,7 +366,10 @@ export default function EmployerSearch() {
             )}
           </div>
         </div>
+          </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

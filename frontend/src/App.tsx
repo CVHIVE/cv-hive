@@ -1,42 +1,54 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useMe } from './hooks/useAuth';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import CandidateDashboard from './pages/CandidateDashboard';
-import EmployerSearch from './pages/EmployerSearch';
-import Pricing from './pages/Pricing';
-import CandidateProfile from './pages/CandidateProfile';
-import AdminDashboard from './pages/AdminDashboard';
-import JobSearch from './pages/JobSearch';
-import JobDetail from './pages/JobDetail';
-import PostJob from './pages/PostJob';
-import EmployerDashboard from './pages/EmployerDashboard';
-import VerifyEmail from './pages/VerifyEmail';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import JobAlerts from './pages/JobAlerts';
-import CompanyProfile from './pages/CompanyProfile';
-import EmployerSettings from './pages/EmployerSettings';
-import RegisterEmployer from './pages/RegisterEmployer';
-import CompanyDirectory from './pages/CompanyDirectory';
-import CVBuilder from './pages/CVBuilder';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import MyApplications from './pages/MyApplications';
-import SavedJobs from './pages/SavedJobs';
-import PaymentMethods from './pages/PaymentMethods';
-import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import CookieConsent from './components/common/CookieConsent';
+
+// Lazy-loaded pages
+const CandidateDashboard = lazy(() => import('./pages/CandidateDashboard'));
+const EmployerSearch = lazy(() => import('./pages/EmployerSearch'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const CandidateProfile = lazy(() => import('./pages/CandidateProfile'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const JobSearch = lazy(() => import('./pages/JobSearch'));
+const JobDetail = lazy(() => import('./pages/JobDetail'));
+const PostJob = lazy(() => import('./pages/PostJob'));
+const EmployerDashboard = lazy(() => import('./pages/EmployerDashboard'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const JobAlerts = lazy(() => import('./pages/JobAlerts'));
+const CompanyProfile = lazy(() => import('./pages/CompanyProfile'));
+const EmployerSettings = lazy(() => import('./pages/EmployerSettings'));
+const RegisterEmployer = lazy(() => import('./pages/RegisterEmployer'));
+const CompanyDirectory = lazy(() => import('./pages/CompanyDirectory'));
+const CVBuilder = lazy(() => import('./pages/CVBuilder'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const MyApplications = lazy(() => import('./pages/MyApplications'));
+const SavedJobs = lazy(() => import('./pages/SavedJobs'));
+const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+    </div>
+  );
+}
 
 function AppRoutes() {
   // Fetch current user on app load (if token exists)
   useMe();
 
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -142,6 +154,7 @@ function AppRoutes() {
 
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 }
 

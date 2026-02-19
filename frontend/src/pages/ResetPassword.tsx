@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
 
@@ -55,7 +57,11 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Reset Password | CV Hive</title>
+        <meta name="description" content="Set a new password for your CV Hive account." />
+      </Helmet>
       <Header />
       <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
@@ -104,6 +110,7 @@ export default function ResetPassword() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

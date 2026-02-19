@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import EmployerNav from '../components/employer/EmployerNav';
 import { useEmployerJobs, useCloseJob, usePayForJob, useJobApplications, useUpdateApplicationStatus } from '../hooks/useJobs';
 import api from '../services/api';
 import { subscriptionService } from '../services/subscriptions';
@@ -127,7 +130,11 @@ export default function EmployerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Employer Dashboard | CV Hive</title>
+        <meta name="description" content="Manage your job listings, review applications, and track your recruitment activity on CV Hive." />
+      </Helmet>
       <Header />
 
       {/* Paywall: force payment for pending paid plan */}
@@ -168,6 +175,13 @@ export default function EmployerDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="lg:w-56 flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <EmployerNav />
+            </div>
+          </aside>
+          <div className="flex-1 min-w-0">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold">Employer Dashboard</h1>
           <Link to="/post-job" className="btn btn-primary text-center">Post a Job</Link>
@@ -569,7 +583,10 @@ export default function EmployerDashboard() {
             )}
           </div>
         )}
+          </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

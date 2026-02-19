@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import EmployerNav from '../components/employer/EmployerNav';
 import api from '../services/api';
 import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
@@ -77,9 +80,20 @@ export default function EmployerSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Company Settings | CV Hive</title>
+        <meta name="description" content="Update your company profile, logo, and account settings on CV Hive." />
+      </Helmet>
       <Header />
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="lg:w-56 flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <EmployerNav />
+            </div>
+          </aside>
+          <div className="flex-1 min-w-0">
         <h1 className="text-3xl font-bold mb-8">Company Settings</h1>
 
         {/* Logo Upload */}
@@ -165,7 +179,10 @@ export default function EmployerSettings() {
 
         {/* Change Password */}
         <ChangePasswordSection />
+          </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

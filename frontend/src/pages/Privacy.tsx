@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 
 export default function Privacy() {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Privacy Policy | CV Hive</title>
+        <meta name="description" content="CV Hive privacy policy — how we collect, use, and protect your personal data." />
+      </Helmet>
       <Header />
 
       <div className="flex-1 max-w-4xl mx-auto px-4 py-12">
