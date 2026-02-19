@@ -37,7 +37,8 @@ export const registerSchema = z.object({
 });
 
 export const registerEmployerSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address')
+    .refine((val) => isBusinessEmail(val), 'Please use a business email address (e.g. you@company.com). Free email providers like Gmail, Yahoo, and Outlook are not accepted.'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   companyName: z.string().min(1, 'Company name is required'),
 });

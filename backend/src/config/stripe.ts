@@ -21,7 +21,7 @@ export const STRIPE_PLANS = {
     name: 'Enterprise',
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || null,
     priceAED: 1499,
-    contactRevealsLimit: -1, // unlimited
+    contactRevealsLimit: 500,
   },
 } as const;
 

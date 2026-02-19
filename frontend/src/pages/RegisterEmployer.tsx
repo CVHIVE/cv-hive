@@ -10,6 +10,23 @@ const PLAN_LABELS: Record<string, string> = {
   ENTERPRISE: 'Enterprise (AED 1,499/month)',
 };
 
+const BLOCKED_EMAIL_DOMAINS = [
+  'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'yahoo.co.in',
+  'hotmail.com', 'hotmail.co.uk', 'outlook.com', 'outlook.co.uk',
+  'live.com', 'live.co.uk', 'msn.com', 'aol.com', 'icloud.com',
+  'me.com', 'mac.com', 'mail.com', 'protonmail.com', 'proton.me',
+  'zoho.com', 'yandex.com', 'yandex.ru', 'gmx.com', 'gmx.net',
+  'inbox.com', 'fastmail.com', 'tutanota.com', 'hushmail.com',
+  'rediffmail.com', 'qq.com', '163.com', '126.com',
+  'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwaway.email',
+];
+
+function isBusinessEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return false;
+  return !BLOCKED_EMAIL_DOMAINS.includes(domain);
+}
+
 export default function RegisterEmployer() {
   const { isAuthenticated, user } = useAuthStore();
   const [searchParams] = useSearchParams();
@@ -21,13 +38,27 @@ export default function RegisterEmployer() {
   const [companyName, setCompanyName] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   if (isAuthenticated && user?.role === 'EMPLOYER') {
     return <Navigate to="/employer-dashboard" replace />;
   }
 
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (value && !isBusinessEmail(value)) {
+      setEmailError('Please use a business email (e.g. you@company.com). Free providers like Gmail, Yahoo, and Outlook are not accepted.');
+    } else {
+      setEmailError('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isBusinessEmail(email)) {
+      setEmailError('Please use a business email (e.g. you@company.com). Free providers like Gmail, Yahoo, and Outlook are not accepted.');
+      return;
+    }
     if (!agreed) {
       toast.error('Please agree to the Terms & Conditions and Privacy Policy');
       return;
@@ -98,15 +129,18 @@ export default function RegisterEmployer() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Business Email</label>
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input"
-                  placeholder="you@example.com"
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className={`input ${emailError ? 'border-red-400 focus:ring-red-400' : ''}`}
+                  placeholder="you@company.com"
                   required
                 />
+                {emailError && (
+                  <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                )}
               </div>
 
               <div>

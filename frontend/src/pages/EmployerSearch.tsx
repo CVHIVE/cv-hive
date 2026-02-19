@@ -72,7 +72,7 @@ export default function EmployerSearch() {
   const [jobTitleInput, setJobTitleInput] = useState('');
   const [revealingId, setRevealingId] = useState<string | null>(null);
   const [revealedMap, setRevealedMap] = useState<Record<string, RevealedContact>>({});
-  const [exporting, setExporting] = useState(false);
+
   const { data, isLoading } = useSearchCandidates(filters);
   const { data: bookmarkIdsData } = useBookmarkIds();
   const bookmarkIds: string[] = (bookmarkIdsData as any)?.data || bookmarkIdsData || [];
@@ -125,25 +125,7 @@ export default function EmployerSearch() {
     }
   };
 
-  const handleExportCSV = async () => {
-    setExporting(true);
-    try {
-      const blob = await candidateService.exportCandidatesCSV(filters);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'candidates-export.csv';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success('Export downloaded');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Export failed — Enterprise plan required');
-    } finally {
-      setExporting(false);
-    }
-  };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -396,27 +378,7 @@ export default function EmployerSearch() {
                       {plan}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {isEnterprise ? (
-                      <button
-                        onClick={handleExportCSV}
-                        disabled={exporting}
-                        className="btn btn-secondary text-sm px-4 flex items-center gap-1.5"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        {exporting ? 'Exporting...' : 'Export CSV'}
-                      </button>
-                    ) : (
-                      <button
-                        disabled
-                        title="Enterprise plan required"
-                        className="btn btn-secondary text-sm px-4 flex items-center gap-1.5 opacity-50 cursor-not-allowed"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        Export CSV
-                      </button>
-                    )}
-                  </div>
+
                 </div>
 
                 {data?.candidates.length === 0 && (

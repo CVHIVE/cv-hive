@@ -51,12 +51,11 @@ const plans = [
     description: 'For large organizations with high-volume hiring',
     features: [
       'Everything in Professional',
-      'Unlimited contact reveals',
+      'Up to 500 contact reveals / month',
       'Dedicated account manager',
-      'API access',
+      'Priority support & SLA guarantee',
       'Custom integrations',
-      'Bulk candidate export',
-      'SLA guarantee',
+      'API access',
     ],
     cta: 'Subscribe',
     highlighted: false,
@@ -206,8 +205,38 @@ export default function Pricing() {
             })}
           </div>
 
+          {/* Job Posting Fee */}
+          <div className="mt-16">
+            <div className="max-w-3xl mx-auto bg-white border border-gray-100 rounded-2xl shadow-card p-8">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-shrink-0 w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">Job Posting</h3>
+                  <p className="text-gray-500 mb-3">Advertise your vacancies to thousands of active UAE job seekers</p>
+                  <div className="flex flex-wrap gap-3 justify-center md:justify-start text-sm">
+                    <span className="inline-flex items-center gap-1 text-gray-600"><span className="text-accent">&#10003;</span> 28-day live listing</span>
+                    <span className="inline-flex items-center gap-1 text-gray-600"><span className="text-accent">&#10003;</span> Appears in search & job alerts</span>
+                    <span className="inline-flex items-center gap-1 text-gray-600"><span className="text-accent">&#10003;</span> Candidate applications inbox</span>
+                    <span className="inline-flex items-center gap-1 text-gray-600"><span className="text-accent">&#10003;</span> Repost after expiry</span>
+                  </div>
+                </div>
+                <div className="text-center flex-shrink-0">
+                  <div className="text-3xl font-bold text-primary">AED 100</div>
+                  <div className="text-sm text-gray-500">per job post</div>
+                  <Link to={isEmployer ? '/post-job' : '/register-employer'} className="inline-block mt-3">
+                    <button className="btn btn-primary px-6 py-2.5 text-sm">Post a Job</button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Job seekers note */}
-          <div className="mt-16 text-center">
+          <div className="mt-12 text-center">
             <div className="inline-block bg-green-50 border border-green-200 rounded-xl px-8 py-6">
               <h3 className="text-xl font-bold text-green-800 mb-2">
                 Job Seekers — Always Free
