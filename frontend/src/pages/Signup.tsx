@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import { useRegister, useLogout } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
@@ -193,6 +194,10 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Sign Up — Free | CV Hive</title>
+        <meta name="description" content="Create your free CV Hive account. Upload your CV and start applying to jobs across the UAE." />
+      </Helmet>
       <Header />
 
       <div className="max-w-2xl mx-auto px-4 py-8">

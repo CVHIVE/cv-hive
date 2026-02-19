@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Logo from '../components/common/Logo';
 import { useLogin } from '../hooks/useAuth';
@@ -23,6 +24,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Log In | CV Hive</title>
+        <meta name="description" content="Log in to your CV Hive account to manage your profile, apply to jobs, or search candidates." />
+      </Helmet>
       <Header />
 
       <div className="flex items-center justify-center px-4 py-12">

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
@@ -85,6 +86,10 @@ export default function CandidateDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>My Dashboard | CV Hive</title>
+        <meta name="description" content="Manage your CV Hive profile, track applications, and update your settings." />
+      </Helmet>
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

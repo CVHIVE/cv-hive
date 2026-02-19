@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -111,6 +112,10 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Pricing — Employer Plans | CV Hive</title>
+        <meta name="description" content="Flexible recruitment plans for UAE employers. Search CVs, post jobs, and find the right candidates." />
+      </Helmet>
       <Header />
 
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-800 to-primary text-white py-16">

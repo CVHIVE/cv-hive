@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { jsPDF } from 'jspdf';
@@ -674,6 +675,10 @@ export default function CVBuilder() {
      ════════════════════════════════════════ */
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Free CV Builder | CV Hive</title>
+        <meta name="description" content="Create a professional CV in minutes with our free builder tool. No account needed." />
+      </Helmet>
       <Header />
 
       {/* Hero */}

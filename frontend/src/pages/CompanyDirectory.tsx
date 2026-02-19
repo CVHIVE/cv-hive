@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -28,6 +29,10 @@ export default function CompanyDirectory() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Company Directory — UAE Employers A-Z | CV Hive</title>
+        <meta name="description" content="Browse UAE employers and recruitment agencies. Find companies hiring in Dubai, Abu Dhabi, and across the Emirates." />
+      </Helmet>
       <Header />
 
       <section className="bg-gradient-to-r from-purple-600 to-blue-700 text-white py-12">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useSearchJobs } from '../hooks/useJobs';
@@ -60,6 +61,10 @@ export default function JobSearch() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Search Jobs in UAE | CV Hive</title>
+        <meta name="description" content="Browse and search thousands of jobs across Dubai, Abu Dhabi, Sharjah and all UAE Emirates." />
+      </Helmet>
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">

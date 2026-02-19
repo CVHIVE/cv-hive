@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useMe } from './hooks/useAuth';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -23,7 +23,14 @@ import CompanyDirectory from './pages/CompanyDirectory';
 import CVBuilder from './pages/CVBuilder';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import MyApplications from './pages/MyApplications';
+import SavedJobs from './pages/SavedJobs';
+import PaymentMethods from './pages/PaymentMethods';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import CookieConsent from './components/common/CookieConsent';
 
 function AppRoutes() {
   // Fetch current user on app load (if token exists)
@@ -47,6 +54,8 @@ function AppRoutes() {
       <Route path="/cv-builder" element={<CVBuilder />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
 
       <Route
         path="/post-job"
@@ -90,6 +99,22 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/my-applications"
+        element={
+          <ProtectedRoute roles={['CANDIDATE']}>
+            <MyApplications />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/saved-jobs"
+        element={
+          <ProtectedRoute roles={['CANDIDATE']}>
+            <SavedJobs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/search"
         element={
           <ProtectedRoute roles={['EMPLOYER', 'ADMIN']}>
@@ -106,8 +131,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/payment-methods"
+        element={
+          <ProtectedRoute roles={['EMPLOYER']}>
+            <PaymentMethods />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
@@ -116,6 +149,7 @@ function App() {
   return (
     <Router>
       <AppRoutes />
+      <CookieConsent />
     </Router>
   );
 }

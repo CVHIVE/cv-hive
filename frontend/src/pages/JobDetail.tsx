@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useQuery } from '@tanstack/react-query';
@@ -53,6 +54,10 @@ export default function JobDetail() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>{job.title} at {job.company_name} | CV Hive</title>
+        <meta name="description" content={`Apply for ${job.title} at ${job.company_name} in ${job.emirate?.replace(/_/g, ' ')}. View salary, requirements, and apply on CV Hive.`} />
+      </Helmet>
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">

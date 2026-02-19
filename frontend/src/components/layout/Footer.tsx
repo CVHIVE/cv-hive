@@ -32,6 +32,8 @@ export default function Footer() {
               <li><a href="/login" className="hover:text-white transition-colors">Upload CV</a></li>
               <li><a href="/jobs" className="hover:text-white transition-colors">Search Jobs</a></li>
               <li><a href="/cv-builder" className="hover:text-white transition-colors">CV Builder</a></li>
+              <li><a href="/my-applications" className="hover:text-white transition-colors">My Applications</a></li>
+              <li><a href="/saved-jobs" className="hover:text-white transition-colors">Saved Jobs</a></li>
             </ul>
           </div>
           

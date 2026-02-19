@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -41,6 +42,10 @@ export default function CompanyProfile() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{company.company_name} — Jobs & Profile | CV Hive</title>
+        <meta name="description" content={`View ${company.company_name}'s company profile, open jobs, and recruitment information on CV Hive.`} />
+      </Helmet>
       <Header />
 
       <div className="max-w-5xl mx-auto px-4 py-8 flex-1">

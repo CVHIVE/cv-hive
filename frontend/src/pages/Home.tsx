@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useRecentJobs, usePlatformStats, useFeaturedEmployers } from '../hooks/useJobs';
@@ -32,6 +33,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>CV Hive — Find Jobs in UAE | Upload Your CV</title>
+        <meta name="description" content="Search jobs across all seven Emirates. Upload your CV and get discovered by top UAE employers. Free for job seekers." />
+      </Helmet>
       <Header />
 
       {/* Hero — clean, search-focused */}
