@@ -2,6 +2,7 @@
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
+import rateLimit from 'express-rate-limit';
 
 // Import routes
 import authRoutes from './modules/auth/auth.routes';
@@ -84,14 +85,29 @@ app.get('/api/v1', (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/candidates', candidateRoutes);
-app.use('/api/v1/employers', employerRoutes);
-app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/jobs', jobRoutes);
-app.use('/api/v1/job-alerts', jobAlertRoutes);
-app.use('/api/v1/subscriptions', subscriptionRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/candidates', generalLimiter, candidateRoutes);
+app.use('/api/v1/employers', generalLimiter, employerRoutes);
+app.use('/api/v1/admin', generalLimiter, adminRoutes);
+app.use('/api/v1/jobs', generalLimiter, jobRoutes);
+app.use('/api/v1/job-alerts', generalLimiter, jobAlertRoutes);
+app.use('/api/v1/subscriptions', generalLimiter, subscriptionRoutes);
+app.use('/api/v1/analytics', generalLimiter, analyticsRoutes);
 // Payment methods removed - Stripe Checkout handles all payments securely
 
 // Error handler (must be last)
