@@ -113,10 +113,16 @@ export default function Pricing() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-blue-100">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-800 to-primary text-white py-16">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-accent rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
+            <span className="text-sm font-medium text-white/90">Pricing</span>
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Simple, transparent pricing</h1>
+          <p className="text-xl text-white/70">
             Free for job seekers. Flexible plans for employers.
           </p>
         </div>
@@ -130,10 +136,10 @@ export default function Pricing() {
               return (
                 <div
                   key={plan.name}
-                  className={`rounded-2xl p-8 flex flex-col relative ${
+                  className={`rounded-2xl p-8 flex flex-col relative transition-all duration-300 hover:-translate-y-1 ${
                     plan.highlighted
-                      ? 'bg-blue-600 text-white shadow-xl md:scale-105'
-                      : 'bg-white border border-gray-200 shadow-sm'
+                      ? 'bg-gradient-to-br from-primary to-primary-700 text-white shadow-xl md:scale-105'
+                      : 'bg-white border border-gray-100 shadow-card hover:shadow-soft'
                   }`}
                 >
                   {isCurrent && (
@@ -143,14 +149,14 @@ export default function Pricing() {
                   )}
 
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                  <p className={`text-sm mb-4 ${plan.highlighted ? 'text-blue-100' : 'text-gray-500'}`}>
+                  <p className={`text-sm mb-4 ${plan.highlighted ? 'text-white/70' : 'text-gray-500'}`}>
                     {plan.description}
                   </p>
 
                   <div className="mb-6">
                     <span className="text-4xl font-bold">{plan.price}</span>
                     {plan.period && (
-                      <span className={`text-sm ${plan.highlighted ? 'text-blue-200' : 'text-gray-500'}`}>
+                      <span className={`text-sm ${plan.highlighted ? 'text-white/60' : 'text-gray-500'}`}>
                         {plan.period}
                       </span>
                     )}
@@ -159,7 +165,7 @@ export default function Pricing() {
                   <ul className="space-y-3 mb-8 flex-1">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start">
-                        <span className={`mr-2 ${plan.highlighted ? 'text-blue-200' : 'text-green-500'}`}>
+                        <span className={`mr-2 ${plan.highlighted ? 'text-accent-300' : 'text-accent'}`}>
                           &#10003;
                         </span>
                         <span className="text-sm">{feature}</span>
@@ -175,9 +181,9 @@ export default function Pricing() {
                     <button
                       onClick={() => handleSubscribe(plan.key)}
                       disabled={loadingPlan === plan.key}
-                      className={`w-full py-3 rounded-lg font-semibold transition ${
+                      className={`w-full py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${
                         plan.highlighted
-                          ? 'bg-white text-blue-600 hover:bg-gray-100'
+                          ? 'bg-white text-primary hover:bg-gray-100 shadow-sm'
                           : 'btn btn-primary'
                       }`}
                     >
@@ -186,9 +192,9 @@ export default function Pricing() {
                   ) : (
                     <Link to={plan.key !== 'DEMO' ? `/register-employer?plan=${plan.key}` : '/register-employer'}>
                       <button
-                        className={`w-full py-3 rounded-lg font-semibold transition ${
+                        className={`w-full py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${
                           plan.highlighted
-                            ? 'bg-white text-blue-600 hover:bg-gray-100'
+                            ? 'bg-white text-primary hover:bg-gray-100 shadow-sm'
                             : 'btn btn-primary'
                         }`}
                       >
@@ -211,7 +217,7 @@ export default function Pricing() {
                 Create your profile, upload your CV, and get discovered by employers at no cost.
               </p>
               <Link to="/signup" className="inline-block mt-4">
-                <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                <button className="bg-accent text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-accent-700 transition-all active:scale-[0.98] shadow-sm">
                   Create Free Profile
                 </button>
               </Link>
@@ -293,7 +299,7 @@ export default function Pricing() {
                   { name: 'S**** A.', title: 'UX Designer', exp: '5 yrs', loc: 'Sharjah' },
                 ].map((c, i) => (
                   <div key={i} className="bg-white rounded-xl p-5 shadow-sm flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center text-blue-600 font-bold">
+                    <div className="w-12 h-12 bg-primary-50 rounded-xl flex-shrink-0 flex items-center justify-center text-primary font-bold">
                       {c.name.charAt(0)}
                     </div>
                     <div className="flex-1">
@@ -317,7 +323,7 @@ export default function Pricing() {
             {/* Overlay CTA */}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-transparent to-transparent flex items-end justify-center pb-8 pointer-events-none">
               <Link to="/register-employer?plan=PROFESSIONAL" className="pointer-events-auto">
-                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition text-lg">
+                <button className="bg-primary text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold shadow-lg hover:bg-primary-700 transition-all active:scale-[0.98] text-base sm:text-lg">
                   Subscribe to Search Candidates
                 </button>
               </Link>

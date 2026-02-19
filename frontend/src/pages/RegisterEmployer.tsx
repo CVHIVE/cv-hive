@@ -63,11 +63,11 @@ export default function RegisterEmployer() {
             </p>
 
             {selectedPlan && PLAN_LABELS[selectedPlan] ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-700">
+              <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-primary-700">
                   Selected plan: <span className="font-bold">{PLAN_LABELS[selectedPlan]}</span>
                 </p>
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-primary mt-1">
                   After verifying your email, you'll be redirected to complete payment.
                 </p>
                 <Link to="/register-employer" className="text-xs text-blue-500 hover:underline">
@@ -75,12 +75,12 @@ export default function RegisterEmployer() {
                 </Link>
               </div>
             ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-700">
+              <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-primary-700">
                   You'll start on the <span className="font-bold">Demo (Free)</span> plan — explore the platform for 24 hours.
                   Upgrade anytime from your dashboard.
                 </p>
-                <Link to="/pricing" className="text-xs text-blue-600 hover:underline">View all plans</Link>
+                <Link to="/pricing" className="text-xs text-primary hover:underline">View all plans</Link>
               </div>
             )}
 
@@ -135,9 +135,9 @@ export default function RegisterEmployer() {
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
                 <span>
                   I agree to the{' '}
-                  <Link to="/terms" target="_blank" className="text-blue-600 hover:underline">Terms & Conditions</Link>
+                  <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</Link>
                   {' '}and{' '}
-                  <Link to="/privacy" target="_blank" className="text-blue-600 hover:underline">Privacy Policy</Link>
+                  <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>
                 </span>
               </label>
 
@@ -153,11 +153,11 @@ export default function RegisterEmployer() {
 
             <p className="text-center text-sm text-gray-600 mt-6">
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+              <Link to="/login" className="text-primary hover:underline">Login</Link>
             </p>
             <p className="text-center text-sm text-gray-600 mt-2">
               Looking for a job?{' '}
-              <Link to="/signup" className="text-blue-600 hover:underline">Sign up as a candidate</Link>
+              <Link to="/signup" className="text-primary hover:underline">Sign up as a candidate</Link>
             </p>
           </div>
         </div>

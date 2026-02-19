@@ -77,7 +77,7 @@ export default function CandidateDashboard() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -96,7 +96,7 @@ export default function CandidateDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="text-sm text-gray-600 mb-1">Visa Status</div>
-            <div className="text-lg font-bold text-blue-600">
+            <div className="text-lg font-bold text-primary">
               {p?.visa_status ? VISA_LABELS[p.visa_status] : '—'}
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function CandidateDashboard() {
           <h3 className="font-semibold mb-4">Profile Completeness</h3>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
+              className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${p?.completeness_score || 0}%` }}
             />
           </div>
@@ -334,14 +334,14 @@ export default function CandidateDashboard() {
           <h3 className="text-xl font-semibold mb-4">My Applications ({applications?.length || 0})</h3>
           {!applications || applications.length === 0 ? (
             <p className="text-gray-500 text-sm">
-              No applications yet. <Link to="/jobs" className="text-blue-600 hover:underline">Browse jobs</Link>
+              No applications yet. <Link to="/jobs" className="text-primary hover:underline">Browse jobs</Link>
             </p>
           ) : (
             <div className="space-y-3">
               {applications.slice(0, 5).map((app: any) => (
                 <div key={app.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                   <div>
-                    <Link to={`/jobs/${app.job_id}`} className="font-medium text-blue-600 hover:underline">
+                    <Link to={`/jobs/${app.job_id}`} className="font-medium text-primary hover:underline">
                       {app.job_title}
                     </Link>
                     <p className="text-sm text-gray-500">{app.company_name} &middot; {app.emirate?.replace(/_/g, ' ')}</p>
@@ -357,7 +357,7 @@ export default function CandidateDashboard() {
                   <div className="text-right">
                     <span className={`text-xs px-2 py-1 rounded font-medium ${
                       app.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                      app.status === 'REVIEWED' ? 'bg-blue-100 text-blue-700' :
+                      app.status === 'REVIEWED' ? 'bg-primary-100 text-primary-700' :
                       app.status === 'SHORTLISTED' ? 'bg-purple-100 text-purple-700' :
                       app.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
                       app.status === 'HIRED' ? 'bg-green-100 text-green-700' :
@@ -378,14 +378,14 @@ export default function CandidateDashboard() {
           <h3 className="text-xl font-semibold mb-4">Saved Jobs ({savedJobs?.length || 0})</h3>
           {!savedJobs || savedJobs.length === 0 ? (
             <p className="text-gray-500 text-sm">
-              No saved jobs. <Link to="/jobs" className="text-blue-600 hover:underline">Browse jobs</Link>
+              No saved jobs. <Link to="/jobs" className="text-primary hover:underline">Browse jobs</Link>
             </p>
           ) : (
             <div className="space-y-3">
               {savedJobs.slice(0, 5).map((job: any) => (
                 <div key={job.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                   <div>
-                    <Link to={`/jobs/${job.id}`} className="font-medium text-blue-600 hover:underline">
+                    <Link to={`/jobs/${job.id}`} className="font-medium text-primary hover:underline">
                       {job.title}
                     </Link>
                     <p className="text-sm text-gray-500">{job.company_name} &middot; {job.emirate?.replace(/_/g, ' ')}</p>

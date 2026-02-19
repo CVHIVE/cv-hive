@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useLogout } from '../../hooks/useAuth';
+import Logo from '../common/Logo';
 
 export default function Header() {
   const { isAuthenticated, user } = useAuthStore();
@@ -12,26 +13,26 @@ export default function Header() {
   const closeMobile = () => setMobileMenuOpen(false);
 
   const navLinkClass = (path: string) =>
-    `block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+    `block px-3 py-2 rounded-xl text-base font-medium transition-all ${
       location.pathname === path
-        ? 'text-blue-600 bg-blue-50'
-        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        ? 'text-primary bg-primary-50 font-semibold'
+        : 'text-gray-600 hover:text-primary hover:bg-gray-50'
     }`;
 
   const desktopLinkClass = (path: string) =>
-    `text-sm font-medium transition-colors ${
+    `text-sm font-medium transition-all relative px-1 py-0.5 ${
       location.pathname === path
-        ? 'text-blue-600'
-        : 'text-gray-600 hover:text-gray-900'
+        ? 'text-primary font-semibold'
+        : 'text-gray-600 hover:text-primary'
     }`;
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
-            <span className="text-xl sm:text-2xl font-bold text-blue-600">CV Hive</span>
+            <Logo size="sm" />
           </Link>
 
           {/* Desktop Nav */}
@@ -67,7 +68,7 @@ export default function Header() {
             <div className="hidden md:flex items-center space-x-3">
               {isAuthenticated ? (
                 <>
-                  <span className="text-sm text-gray-600 hidden lg:block max-w-[200px] truncate">{user?.email}</span>
+                  <span className="text-sm text-gray-500 hidden lg:block max-w-[200px] truncate">{user?.email}</span>
                   <button onClick={logout} className="btn btn-secondary text-sm">Logout</button>
                 </>
               ) : (
@@ -81,7 +82,7 @@ export default function Header() {
             {/* Mobile hamburger button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-xl text-gray-500 hover:text-primary hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle menu"
             >
@@ -101,7 +102,7 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-lg">
           <div className="px-4 py-3 space-y-1">
             <Link to="/" className={navLinkClass('/')} onClick={closeMobile}>Home</Link>
             <Link to="/jobs" className={navLinkClass('/jobs')} onClick={closeMobile}>Find Jobs</Link>

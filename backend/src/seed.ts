@@ -143,7 +143,7 @@ async function seed() {
       cancel_at_period_end BOOLEAN DEFAULT FALSE,
       current_period_start TIMESTAMP,
       current_period_end TIMESTAMP,
-      contact_reveals_limit INTEGER DEFAULT 2,
+      contact_reveals_limit INTEGER DEFAULT 0,
       contact_reveals_used INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW()
     );

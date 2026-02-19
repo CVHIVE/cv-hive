@@ -61,7 +61,7 @@ export default function ForgotPassword() {
                   </button>
                 </form>
                 <p className="text-center text-sm text-gray-600 mt-4">
-                  <Link to="/login" className="text-blue-600 hover:underline">Back to Login</Link>
+                  <Link to="/login" className="text-primary hover:underline">Back to Login</Link>
                 </p>
               </>
             )}

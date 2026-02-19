@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import { useRegister, useLogout } from '../hooks/useAuth';
@@ -7,6 +7,7 @@ import { candidateService } from '../services/candidates';
 import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
 import type { Emirate, VisaStatus } from '../types';
+import { validateFullName } from '../utils/profanityFilter';
 
 const STEPS = [
   'Account', 'Upload CV', 'Personal Details', 'Job Preferences',
@@ -80,12 +81,20 @@ export default function Signup() {
   const [cvVisibility, setCvVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
 
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState('');
 
   const handleStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) { toast.error('Please agree to the Terms & Privacy Policy'); return; }
+    const nameValidation = validateFullName(fullName);
+    if (!nameValidation.valid) {
+      setNameError(nameValidation.message || 'Invalid name');
+      toast.error(nameValidation.message || 'Invalid name');
+      return;
+    }
+    setNameError('');
     try {
-      await register({ email, password });
+      await register({ email, password, fullName: fullName.trim() });
       setStep(2);
     } catch {}
   };
@@ -133,8 +142,15 @@ export default function Signup() {
 
   const handleStep3 = async (e: React.FormEvent) => {
     e.preventDefault();
+    const nameValidation = validateFullName(fullName);
+    if (!nameValidation.valid) {
+      setNameError(nameValidation.message || 'Invalid name');
+      toast.error(nameValidation.message || 'Invalid name');
+      return;
+    }
+    setNameError('');
     const ok = await saveProfile({
-      fullName, phone, currentEmirate, visaStatus,
+      fullName: fullName.trim(), phone, currentEmirate, visaStatus,
     });
     if (ok) setStep(4);
   };
@@ -192,13 +208,13 @@ export default function Signup() {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-1 ${
                       isDone ? 'bg-green-500 text-white' :
-                      isActive ? 'bg-blue-600 text-white' :
+                      isActive ? 'bg-primary text-white' :
                       'bg-gray-200 text-gray-500'
                     }`}
                   >
                     {isDone ? '\u2713' : stepNum}
                   </div>
-                  <span className={`text-xs text-center hidden sm:block ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
+                  <span className={`text-xs text-center hidden sm:block ${isActive ? 'text-primary font-semibold' : 'text-gray-400'}`}>
                     {label}
                   </span>
                 </div>
@@ -207,7 +223,7 @@ export default function Signup() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div
-              className="bg-blue-600 h-1.5 rounded-full transition-all"
+              className="bg-primary h-1.5 rounded-full transition-all"
               style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
             />
           </div>
@@ -222,6 +238,22 @@ export default function Signup() {
 
               <form onSubmit={handleStep1} className="space-y-4">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name * <span className="text-gray-400 font-normal">(First and Last name)</span></label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    className={`input ${nameError ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    required
+                    minLength={2}
+                    placeholder="e.g. John Smith"
+                  />
+                  {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" placeholder="you@example.com" required />
                 </div>
@@ -234,7 +266,7 @@ export default function Signup() {
                 </div>
                 <label className="flex items-start gap-2 text-sm">
                   <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
-                  <span>I agree to the <a href="/terms" target="_blank" className="text-blue-600 hover:underline">Terms & Conditions</a> and <a href="/privacy" target="_blank" className="text-blue-600 hover:underline">Privacy Policy</a></span>
+                  <span>I agree to the <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a> and <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a></span>
                 </label>
                 <button type="submit" disabled={isRegistering} className="btn btn-primary w-full">
                   {isRegistering ? 'Creating Account...' : 'Create Account'}
@@ -242,7 +274,7 @@ export default function Signup() {
               </form>
 
               <div className="mt-6 pt-4 border-t text-center">
-                <p className="text-sm text-gray-600 mb-3">Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link></p>
+                <p className="text-sm text-gray-600 mb-3">Already have an account? <Link to="/login" className="text-primary hover:underline">Login</Link></p>
                 <Link to="/pricing" className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-3 rounded-lg transition text-sm">
                   Recruiter? Click here
                 </Link>
@@ -302,7 +334,7 @@ export default function Signup() {
               </div>
 
               <div className="mt-4 text-center">
-                <Link to="/pricing" className="text-sm text-blue-600 hover:underline">Recruiter? Click here</Link>
+                <Link to="/pricing" className="text-sm text-primary hover:underline">Recruiter? Click here</Link>
               </div>
             </>
           )}
@@ -315,8 +347,20 @@ export default function Signup() {
 
               <form onSubmit={handleStep3} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="input" required minLength={2} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name * <span className="text-gray-400 font-normal">(First and Last name)</span></label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    className={`input ${nameError ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    required
+                    minLength={2}
+                    placeholder="e.g. John Smith"
+                  />
+                  {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
@@ -433,14 +477,14 @@ export default function Signup() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">CV Visibility</label>
                   <div className="space-y-3">
-                    <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition ${cvVisibility === 'PUBLIC' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}>
+                    <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition ${cvVisibility === 'PUBLIC' ? 'border-primary bg-primary-50' : 'border-gray-200'}`}>
                       <input type="radio" name="visibility" checked={cvVisibility === 'PUBLIC'} onChange={() => setCvVisibility('PUBLIC')} className="mt-1" />
                       <div>
                         <div className="font-semibold">Public</div>
                         <p className="text-sm text-gray-500">Your profile is visible to all registered employers searching for candidates</p>
                       </div>
                     </label>
-                    <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition ${cvVisibility === 'PRIVATE' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}>
+                    <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition ${cvVisibility === 'PRIVATE' ? 'border-primary bg-primary-50' : 'border-gray-200'}`}>
                       <input type="radio" name="visibility" checked={cvVisibility === 'PRIVATE'} onChange={() => setCvVisibility('PRIVATE')} className="mt-1" />
                       <div>
                         <div className="font-semibold">Private</div>
@@ -464,7 +508,7 @@ export default function Signup() {
                 <div className="text-6xl mb-4">&#9993;</div>
                 <h2 className="text-2xl font-bold mb-2">Verify Your Email</h2>
                 <p className="text-gray-600 mb-2">We've sent a verification link to:</p>
-                <p className="font-semibold text-lg text-blue-600 mb-6">{email}</p>
+                <p className="font-semibold text-lg text-primary mb-6">{email}</p>
                 <p className="text-sm text-gray-500 mb-6">Check your inbox and click the link to activate your account.</p>
 
                 <div className="space-y-3">

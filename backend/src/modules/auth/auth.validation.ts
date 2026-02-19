@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { containsProfanity } from '../../utils/profanityFilter';
 
 // Personal / free email domains that employers cannot use
 const BLOCKED_EMAIL_DOMAINS = [
@@ -21,7 +22,18 @@ export function isBusinessEmail(email: string): boolean {
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  fullName: z.string().optional(),
+  fullName: z.string()
+    .min(2, 'Full name is required')
+    .refine((val) => {
+      const parts = val.trim().split(/\s+/).filter((p) => p.length > 0);
+      return parts.length >= 2;
+    }, 'Please enter both your first name and last name')
+    .refine((val) => {
+      const parts = val.trim().split(/\s+/).filter((p) => p.length > 0);
+      return parts.every((p) => p.length >= 2);
+    }, 'Each name must be at least 2 characters long')
+    .refine((val) => !containsProfanity(val), 'Name contains inappropriate language. Please enter your real name.')
+    .optional(),
 });
 
 export const registerEmployerSchema = z.object({

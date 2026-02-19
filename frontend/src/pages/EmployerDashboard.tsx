@@ -90,7 +90,7 @@ export default function EmployerDashboard() {
   const STATUS_OPTIONS = ['PENDING', 'REVIEWED', 'SHORTLISTED', 'REJECTED', 'HIRED'] as const;
   const STATUS_COLORS: Record<string, string> = {
     PENDING: 'bg-yellow-100 text-yellow-700',
-    REVIEWED: 'bg-blue-100 text-blue-700',
+    REVIEWED: 'bg-primary-100 text-primary-700',
     SHORTLISTED: 'bg-purple-100 text-purple-700',
     REJECTED: 'bg-red-100 text-red-700',
     HIRED: 'bg-green-100 text-green-700',
@@ -120,7 +120,7 @@ export default function EmployerDashboard() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -138,7 +138,7 @@ export default function EmployerDashboard() {
             <h2 className="text-2xl font-bold mb-2">Complete Your Payment</h2>
             <p className="text-gray-600 mb-4">
               Your email is verified! Complete your{' '}
-              <span className="font-bold text-blue-600">
+              <span className="font-bold text-primary">
                 {storedPendingPlan === 'PROFESSIONAL' ? 'Professional' : 'Enterprise'}
               </span>{' '}
               plan payment to unlock all employer features.
@@ -180,7 +180,7 @@ export default function EmployerDashboard() {
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
-                tab === t ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                tab === t ? 'bg-white text-primary shadow' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               {t === 'jobs' ? `Jobs (${jobs?.length || 0})` :
@@ -194,14 +194,14 @@ export default function EmployerDashboard() {
         {employerProfile && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="card flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
               <div>
                 <div className="text-sm text-gray-500">Response Rate</div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-primary">
                   {parseFloat(employerProfile.response_rate || 0).toFixed(0)}%
                 </div>
                 <div className="text-xs text-gray-400">
@@ -282,7 +282,7 @@ export default function EmployerDashboard() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => { setSelectedJobId(job.id); setTab('applications'); }}
-                        className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200"
+                        className="text-xs bg-primary-100 text-primary-700 px-3 py-1.5 rounded hover:bg-primary-200"
                       >
                         View Applications
                       </button>
@@ -366,7 +366,7 @@ export default function EmployerDashboard() {
                             <h3 className="font-semibold">{app.full_name}</h3>
                             {/* Contact Info */}
                             <div className="flex flex-wrap gap-x-4 mt-1">
-                              <a href={`mailto:${app.email}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                              <a href={`mailto:${app.email}`} className="text-sm text-primary hover:underline flex items-center gap-1">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -413,7 +413,7 @@ export default function EmployerDashboard() {
                                 href={`${API_BASE}${app.cv_url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-blue-600 hover:underline"
+                                className="text-xs text-primary hover:underline"
                               >
                                 Download CV
                               </a>
@@ -434,14 +434,14 @@ export default function EmployerDashboard() {
           <div>
             {!analytics ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                   <div className="card">
                     <div className="text-sm text-gray-500">Total Jobs</div>
-                    <div className="text-2xl font-bold text-blue-600">{analytics.jobs?.total || 0}</div>
+                    <div className="text-2xl font-bold text-primary">{analytics.jobs?.total || 0}</div>
                     <div className="text-xs text-gray-400">{analytics.jobs?.active || 0} active</div>
                   </div>
                   <div className="card">
@@ -490,7 +490,7 @@ export default function EmployerDashboard() {
                         return (
                           <div key={i} className="flex-1 flex flex-col items-center group relative">
                             <div
-                              className="w-full bg-blue-500 rounded-t min-h-[2px]"
+                              className="w-full bg-primary-500 rounded-t min-h-[2px]"
                               style={{ height: `${height}%` }}
                             />
                             <div className="absolute -top-6 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded">
@@ -512,14 +512,16 @@ export default function EmployerDashboard() {
           <div>
             {!subscription ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
               </div>
             ) : (
               <div className="max-w-lg">
                 <div className="card mb-6">
                   <h3 className="font-semibold mb-4">Current Plan</h3>
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl font-bold text-blue-600">{subscription.plan_type}</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {subscription.plan_type === 'DEMO' ? 'Demo (Free)' : subscription.plan_type === 'PROFESSIONAL' ? 'Professional' : subscription.plan_type === 'ENTERPRISE' ? 'Enterprise' : subscription.plan_type}
+                    </span>
                     <span className={`text-xs px-2 py-1 rounded ${
                       subscription.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
@@ -530,7 +532,7 @@ export default function EmployerDashboard() {
                     )}
                   </div>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p>Contact Reveals: {subscription.contact_reveals_used} / {subscription.contact_reveals_limit === -1 ? 'Unlimited' : subscription.contact_reveals_limit}</p>
+                    <p>Contact Reveals: {subscription.plan_type === 'DEMO' ? 'Upgrade to reveal contacts' : `${subscription.contact_reveals_used} / ${subscription.contact_reveals_limit === -1 ? 'Unlimited' : subscription.contact_reveals_limit}`}</p>
                     {subscription.current_period_end && (
                       <p>Current period ends: {new Date(subscription.current_period_end).toLocaleDateString()}</p>
                     )}
@@ -541,7 +543,7 @@ export default function EmployerDashboard() {
                     <div className="mt-4">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full"
+                          className="bg-primary h-2 rounded-full"
                           style={{ width: `${Math.min(100, (subscription.contact_reveals_used / subscription.contact_reveals_limit) * 100)}%` }}
                         />
                       </div>

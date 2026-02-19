@@ -117,7 +117,7 @@ export default function JobAlerts() {
 
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
           </div>
         ) : !alerts || alerts.length === 0 ? (
           <div className="card text-center py-12 text-gray-500">
@@ -135,7 +135,7 @@ export default function JobAlerts() {
                       <span className={`text-xs px-2 py-0.5 rounded ${alert.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                         {alert.is_active ? 'Active' : 'Paused'}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary-100 text-primary-700">
                         {alert.frequency}
                       </span>
                     </div>

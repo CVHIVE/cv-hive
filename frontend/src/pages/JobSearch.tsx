@@ -153,7 +153,7 @@ export default function JobSearch() {
           <div className="lg:col-span-3">
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
               </div>
             ) : (
               <>
@@ -173,7 +173,7 @@ export default function JobSearch() {
                       <div className="card hover:shadow-md transition">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-lg text-blue-600 hover:text-blue-800">{job.title}</h3>
+                            <h3 className="font-semibold text-lg text-primary hover:text-primary-800">{job.title}</h3>
                             <p className="text-gray-700 font-medium">{job.company_name}</p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-2">
                               <span>{job.emirate.replace(/_/g, ' ')}</span>
@@ -186,7 +186,7 @@ export default function JobSearch() {
                             {job.skills && (
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {job.skills.split(',').slice(0, 4).map((s: string) => (
-                                  <span key={s} className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded">
+                                  <span key={s} className="bg-primary-50 text-primary text-xs px-2 py-0.5 rounded">
                                     {s.trim()}
                                   </span>
                                 ))}

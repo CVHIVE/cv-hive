@@ -27,7 +27,7 @@ export default function JobDetail() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export default function JobDetail() {
         <Header />
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold mb-4">Job not found</h1>
-          <Link to="/jobs" className="text-blue-600 hover:underline">Back to job search</Link>
+          <Link to="/jobs" className="text-primary hover:underline">Back to job search</Link>
         </div>
       </div>
     );
@@ -56,7 +56,7 @@ export default function JobDetail() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-        <Link to="/jobs" className="text-blue-600 hover:underline text-sm mb-4 inline-block">
+        <Link to="/jobs" className="text-primary hover:underline text-sm mb-4 inline-block">
           &larr; Back to search
         </Link>
 
@@ -68,7 +68,7 @@ export default function JobDetail() {
               <p className="text-lg text-gray-700 font-medium mb-4">{job.company_name}</p>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                <span className="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">
                   {job.emirate.replace(/_/g, ' ')}
                 </span>
                 <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">
@@ -163,7 +163,7 @@ export default function JobDetail() {
                     Login to Apply
                   </Link>
                   <p className="text-xs text-gray-500 text-center mt-2">
-                    <Link to="/signup" className="text-blue-600 hover:underline">Or create an account</Link>
+                    <Link to="/signup" className="text-primary hover:underline">Or create an account</Link>
                   </p>
                 </div>
               )}
@@ -205,7 +205,7 @@ export default function JobDetail() {
                       <span className="text-gray-500">Reputation</span>
                       <span className={`font-medium ${
                         parseFloat(job.reputation_score || 0) >= 70 ? 'text-green-600' :
-                        parseFloat(job.reputation_score || 0) >= 40 ? 'text-blue-600' : 'text-gray-500'
+                        parseFloat(job.reputation_score || 0) >= 40 ? 'text-primary' : 'text-gray-500'
                       }`}>
                         {parseFloat(job.reputation_score || 0).toFixed(1)}/100
                       </span>
@@ -241,7 +241,7 @@ export default function JobDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {similarJobs.map((sj: any) => (
                 <Link key={sj.id} to={`/jobs/${sj.id}`} className="card hover:shadow-md transition block">
-                  <h3 className="font-semibold text-blue-600">{sj.title}</h3>
+                  <h3 className="font-semibold text-primary">{sj.title}</h3>
                   <p className="text-sm text-gray-600">{sj.company_name}</p>
                   <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 mt-1">
                     <span>{sj.emirate?.replace(/_/g, ' ')}</span>

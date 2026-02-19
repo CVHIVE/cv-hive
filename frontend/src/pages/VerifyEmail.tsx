@@ -84,8 +84,8 @@ export default function VerifyEmail() {
           <div className="card text-center">
             {status === 'pending' && (
               <>
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail size={32} className="text-blue-600" />
+                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail size={32} className="text-primary" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Check Your Email</h2>
                 <p className="text-gray-600 mb-2">
@@ -122,7 +122,7 @@ export default function VerifyEmail() {
             )}
             {status === 'loading' && (
               <>
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600 mx-auto mb-4" />
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mx-auto mb-4" />
                 <p className="text-gray-600">Verifying your email...</p>
               </>
             )}
@@ -136,8 +136,8 @@ export default function VerifyEmail() {
 
                 {pendingPlan && PLAN_LABELS[pendingPlan] ? (
                   <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-700 font-medium">
+                    <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                      <p className="text-sm text-primary-700 font-medium">
                         Almost there! Complete your payment to activate the{' '}
                         <span className="font-bold">{PLAN_LABELS[pendingPlan]}</span> plan.
                       </p>

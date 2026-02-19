@@ -699,7 +699,7 @@ export default function CVBuilder() {
                   key={i}
                   onClick={() => setStep(i)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all
-                    ${active ? 'bg-blue-600 text-white shadow' : done ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    ${active ? 'bg-primary text-white shadow' : done ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                 >
                   {done ? <CheckCircle size={14} /> : <Icon size={14} />}
                   <span className="hidden sm:inline">{s.label}</span>
@@ -760,7 +760,7 @@ export default function CVBuilder() {
                 <div className="sticky top-16">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Live Preview</h3>
-                    <button onClick={handleDownload} className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    <button onClick={handleDownload} className="text-xs text-primary hover:text-primary-700 flex items-center gap-1">
                       <Download size={13} /> Download
                     </button>
                   </div>
@@ -808,7 +808,7 @@ function StepPersonal({ p, up, photoRef, handlePhoto }: {
       {/* Photo */}
       <div className="flex items-center gap-4 mb-6">
         <div
-          className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-blue-400 overflow-hidden bg-gray-50"
+          className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary-400 overflow-hidden bg-gray-50"
           onClick={() => photoRef.current?.click()}
         >
           {p.photo ? (
@@ -818,7 +818,7 @@ function StepPersonal({ p, up, photoRef, handlePhoto }: {
           )}
         </div>
         <div>
-          <button type="button" onClick={() => photoRef.current?.click()} className="text-sm text-blue-600 hover:underline">
+          <button type="button" onClick={() => photoRef.current?.click()} className="text-sm text-primary hover:underline">
             Upload photo
           </button>
           <p className="text-xs text-gray-400 mt-0.5">Optional &bull; JPG/PNG under 2 MB</p>
@@ -895,9 +895,9 @@ function StepSummary({ summary, up }: { summary: string; up: (p: string, v: any)
         onChange={(e) => up('summary', e.target.value)}
         placeholder={`Results-driven marketing professional with 8+ years of experience in the UAE market. Proven track record of increasing brand awareness and driving revenue growth across MENA region. Skilled in digital marketing, team leadership, and strategic planning. Seeking a senior role with a forward-thinking organization in Dubai.`}
       />
-      <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <p className="text-xs text-blue-700 font-medium mb-1">Tips for UAE CVs:</p>
-        <ul className="text-xs text-blue-600 space-y-0.5 list-disc list-inside">
+      <div className="mt-3 bg-primary-50 border border-primary-200 rounded-lg p-3">
+        <p className="text-xs text-primary-700 font-medium mb-1">Tips for UAE CVs:</p>
+        <ul className="text-xs text-primary space-y-0.5 list-disc list-inside">
           <li>Mention your total UAE/GCC experience</li>
           <li>Include industry-specific keywords from the job posting</li>
           <li>Keep it concise &mdash; 3 to 5 sentences maximum</li>
@@ -989,7 +989,7 @@ function StepExperiences({ experiences, setData }: { experiences: Experience[]; 
             <div className="mt-3">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium text-gray-700">Key Achievements / Responsibilities</label>
-                <button onClick={() => addAch(i)} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5"><Plus size={12} /> Add bullet</button>
+                <button onClick={() => addAch(i)} className="text-xs text-primary hover:underline flex items-center gap-0.5"><Plus size={12} /> Add bullet</button>
               </div>
               <div className="space-y-2">
                 {exp.achievements.map((ach, ai) => (
@@ -1134,7 +1134,7 @@ function StepSkills({ skillCategories, setData }: { skillCategories: SkillCatego
                   )}
                 </div>
               ))}
-              <button onClick={() => addSkill(ci)} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5">
+              <button onClick={() => addSkill(ci)} className="text-xs text-primary hover:underline flex items-center gap-0.5">
                 <Plus size={12} /> Add skill
               </button>
             </div>

@@ -70,7 +70,7 @@ export default function EmployerSettings() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -89,7 +89,7 @@ export default function EmployerSettings() {
             {profile?.company_logo_url ? (
               <img src={`${API_BASE}${profile.company_logo_url}`} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
             ) : (
-              <div className="w-20 h-20 rounded-lg bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
+              <div className="w-20 h-20 rounded-lg bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary">
                 {profile?.company_name?.charAt(0) || 'C'}
               </div>
             )}

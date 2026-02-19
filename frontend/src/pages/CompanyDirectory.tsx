@@ -46,7 +46,7 @@ export default function CompanyDirectory() {
             <button
               onClick={() => setLetter('')}
               className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition ${
-                letter === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                letter === '' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               All
@@ -56,7 +56,7 @@ export default function CompanyDirectory() {
                 key={l}
                 onClick={() => setLetter(l)}
                 className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition ${
-                  letter === l ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  letter === l ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {l}
@@ -66,7 +66,7 @@ export default function CompanyDirectory() {
 
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
             </div>
           ) : companies && companies.length > 0 ? (
             <>
@@ -88,12 +88,12 @@ export default function CompanyDirectory() {
                         className="w-12 h-12 rounded object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center flex-shrink-0 text-blue-600 font-bold text-lg">
+                      <div className="w-12 h-12 bg-primary-100 rounded flex items-center justify-center flex-shrink-0 text-primary font-bold text-lg">
                         {company.company_name.charAt(0)}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-blue-600 truncate">{company.company_name}</h3>
+                      <h3 className="font-semibold text-primary truncate">{company.company_name}</h3>
                       {company.industry && (
                         <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded inline-block mt-1">
                           {company.industry}

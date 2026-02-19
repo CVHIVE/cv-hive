@@ -79,14 +79,14 @@ export default function PostJob() {
         <Header />
         <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="card text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold mb-2">Job Created!</h2>
             <p className="text-gray-600 mb-6">
-              Your job listing has been saved as a draft. Pay <span className="font-bold text-blue-600">AED 100</span> to publish it and start receiving applications.
+              Your job listing has been saved as a draft. Pay <span className="font-bold text-primary">AED 100</span> to publish it and start receiving applications.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">

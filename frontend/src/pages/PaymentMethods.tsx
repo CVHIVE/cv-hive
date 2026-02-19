@@ -73,7 +73,7 @@ export default function PaymentMethods() {
   };
 
   const brandColors: Record<string, string> = {
-    Visa: 'bg-blue-600',
+    Visa: 'bg-primary',
     Mastercard: 'bg-red-500',
     Amex: 'bg-gray-700',
     Discover: 'bg-orange-500',
@@ -196,7 +196,7 @@ export default function PaymentMethods() {
         {/* Card List */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
           </div>
         ) : !cards || cards.length === 0 ? (
           <div className="card text-center py-12">
@@ -222,7 +222,7 @@ export default function PaymentMethods() {
               <div
                 key={card.id}
                 className={`card flex items-center justify-between ${
-                  card.is_default ? 'ring-2 ring-blue-500' : ''
+                  card.is_default ? 'ring-2 ring-primary-400' : ''
                 }`}
               >
                 <div className="flex items-center space-x-4">
@@ -239,7 +239,7 @@ export default function PaymentMethods() {
                         {card.card_brand} ending in {card.card_last4}
                       </span>
                       {card.is_default && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
                           Default
                         </span>
                       )}
@@ -255,7 +255,7 @@ export default function PaymentMethods() {
                   {!card.is_default && (
                     <button
                       onClick={() => setDefaultMutation.mutate(card.id)}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-primary hover:underline"
                     >
                       Set as default
                     </button>
@@ -273,9 +273,9 @@ export default function PaymentMethods() {
         )}
 
         {/* Info */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-800 mb-1">Payment Info</h3>
-          <ul className="text-sm text-blue-700 space-y-1">
+        <div className="mt-8 bg-primary-50 border border-primary-200 rounded-lg p-4">
+          <h3 className="font-semibold text-primary-800 mb-1">Payment Info</h3>
+          <ul className="text-sm text-primary-700 space-y-1">
             <li>&#8226; Job posting: AED 100 per listing (28 days active)</li>
             <li>&#8226; Your default card will be charged when you publish a job</li>
             <li>&#8226; Subscription plans are billed monthly to your default card</li>

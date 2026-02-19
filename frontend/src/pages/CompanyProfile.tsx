@@ -18,7 +18,7 @@ export default function CompanyProfile() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -54,7 +54,7 @@ export default function CompanyProfile() {
                 className="w-20 h-20 rounded-lg object-cover"
               />
             ) : (
-              <div className="w-20 h-20 rounded-lg bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
+              <div className="w-20 h-20 rounded-lg bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary">
                 {company.company_name?.charAt(0)}
               </div>
             )}
@@ -80,7 +80,7 @@ export default function CompanyProfile() {
                 </span>
                 <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
                   parseFloat(company.reputation_score || 0) >= 70 ? 'bg-green-100 text-green-700' :
-                  parseFloat(company.reputation_score || 0) >= 40 ? 'bg-blue-100 text-blue-700' :
+                  parseFloat(company.reputation_score || 0) >= 40 ? 'bg-primary-100 text-primary-700' :
                   'bg-gray-100 text-gray-600'
                 }`}>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ export default function CompanyProfile() {
                 </span>
               </div>
               {company.website && (
-                <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline">
+                <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
                   {company.website}
                 </a>
               )}
@@ -111,7 +111,7 @@ export default function CompanyProfile() {
           <div className="space-y-4">
             {company.jobs.map((job: any) => (
               <Link key={job.id} to={`/jobs/${job.id}`} className="card block hover:shadow-md transition">
-                <h3 className="font-semibold text-lg text-blue-600">{job.title}</h3>
+                <h3 className="font-semibold text-lg text-primary">{job.title}</h3>
                 <div className="flex flex-wrap gap-x-4 text-sm text-gray-500 mt-1">
                   <span>{job.emirate?.replace(/_/g, ' ')}</span>
                   <span>{job.job_type?.replace(/_/g, ' ')}</span>

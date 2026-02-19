@@ -31,7 +31,7 @@ export const createCheckoutSession = async (employerId: string, planType: 'PROFE
 
     if (sub.rows.length === 0) {
       await db.query(
-        `INSERT INTO subscriptions (id, employer_id, stripe_customer_id) VALUES ($1, $2, $3)`,
+        `INSERT INTO subscriptions (id, employer_id, stripe_customer_id, plan_type, contact_reveals_limit, contact_reveals_used) VALUES ($1, $2, $3, 'DEMO', 0, 0)`,
         [uuidv4(), employerId, customerId]
       );
     } else {
