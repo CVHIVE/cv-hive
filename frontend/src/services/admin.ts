@@ -1,6 +1,12 @@
 import api from './api';
 
 export const adminService = {
+  getStats: () =>
+    api.get('/admin/stats').then((r) => r.data),
+
+  getActivity: () =>
+    api.get('/admin/activity').then((r) => r.data),
+
   getUsers: () =>
     api.get('/admin/users').then((r) => r.data),
 
@@ -10,12 +16,15 @@ export const adminService = {
   getEmployers: () =>
     api.get('/admin/employers').then((r) => r.data),
 
-  resetPassword: (userId: string, newPassword: string) =>
-    api.put(`/admin/users/${userId}/reset-password`, { newPassword }).then((r) => r.data),
-
   deleteUser: (userId: string) =>
     api.delete(`/admin/users/${userId}`).then((r) => r.data),
 
   getJobs: () =>
     api.get('/admin/jobs').then((r) => r.data),
+
+  updateJobStatus: (jobId: string, status: string) =>
+    api.put(`/admin/jobs/${jobId}/status`, { status }).then((r) => r.data),
+
+  updateEmployerSubscription: (employerId: string, planType: string) =>
+    api.put(`/admin/employers/${employerId}/subscription`, { planType }).then((r) => r.data),
 };

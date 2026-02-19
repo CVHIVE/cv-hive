@@ -3,7 +3,7 @@ dotenv.config();
 
 import app from './app';
 import { autoPauseUnresponsiveJobs, autoExpireJobs } from './modules/jobs/jobs.service';
-import { cleanupDemoAccounts } from '../scripts/cleanup-demo-accounts';
+import { cleanupDemoAccounts } from './services/cleanup.service';
 
 const PORT = process.env.PORT || 5000;
 

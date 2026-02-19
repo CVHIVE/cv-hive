@@ -23,6 +23,7 @@ router.post('/admin/auto-pause', authenticate, authorize('ADMIN'), jobController
 router.post('/', authenticate, authorize('EMPLOYER'), validateRequest(createJobSchema), jobController.createJob);
 router.put('/:id', authenticate, authorize('EMPLOYER'), validateRequest(updateJobSchema), jobController.updateJob);
 router.post('/:id/pay', authenticate, authorize('EMPLOYER'), jobController.payForJob);
+router.post('/:id/repost', authenticate, authorize('EMPLOYER'), jobController.repostJob);
 router.post('/verify-payment', authenticate, authorize('EMPLOYER'), jobController.verifyJobPayment);
 router.put('/:id/close', authenticate, authorize('EMPLOYER'), jobController.closeJob);
 router.get('/employer/mine', authenticate, authorize('EMPLOYER'), jobController.getEmployerJobs);

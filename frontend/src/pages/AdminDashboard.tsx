@@ -1,485 +1,379 @@
-import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { adminService } from '../services/admin';
+import toast from 'react-hot-toast';
 
-type Tab = 'registers' | 'candidates' | 'employers' | 'cvs' | 'jobs';
+const STATUS_COLORS: Record<string, string> = {
+  ACTIVE: 'bg-green-100 text-green-700',
+  DRAFT: 'bg-yellow-100 text-yellow-700',
+  PAUSED: 'bg-orange-100 text-orange-700',
+  EXPIRED: 'bg-red-100 text-red-700',
+  CLOSED: 'bg-gray-100 text-gray-600',
+};
 
-interface UserRow {
-  id: string;
-  email: string;
-  role: string;
-  email_verified: boolean;
-  created_at: string;
-}
-
-interface CandidateRow {
-  id: string;
-  user_id: string;
-  email: string;
-  full_name: string;
-  phone?: string;
-  job_title?: string;
-  current_emirate?: string;
-  visa_status?: string;
-  total_experience_years?: number;
-  availability_status?: string;
-  cv_url?: string;
-  registered_at: string;
-}
-
-interface EmployerRow {
-  id: string;
-  user_id: string;
-  email: string;
-  company_name: string;
-  industry?: string;
-  registered_at: string;
-}
-
-interface JobRow {
-  id: string;
-  title: string;
-  company_name: string;
-  industry?: string;
-  job_type: string;
-  emirate: string;
-  status: string;
-  views_count: number;
-  applications_count: number;
-  created_at: string;
-}
-
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'registers', label: 'New Registers' },
-  { key: 'candidates', label: 'Candidates' },
-  { key: 'employers', label: 'Employers' },
-  { key: 'cvs', label: 'CVs' },
-  { key: 'jobs', label: 'Jobs' },
-];
-
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+const PLAN_COLORS: Record<string, string> = {
+  DEMO: 'bg-gray-100 text-gray-700',
+  PROFESSIONAL: 'bg-primary-100 text-primary-700',
+  ENTERPRISE: 'bg-purple-100 text-purple-700',
+};
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<Tab>('registers');
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [candidates, setCandidates] = useState<CandidateRow[]>([]);
-  const [employers, setEmployers] = useState<EmployerRow[]>([]);
-  const [jobs, setJobs] = useState<JobRow[]>([]);
+  const [tab, setTab] = useState<'overview' | 'users' | 'candidates' | 'employers' | 'jobs'>('overview');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [resetModal, setResetModal] = useState<{ userId: string; email: string } | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [resetting, setResetting] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const { data: stats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: () => adminService.getStats(),
+  });
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [u, c, e, j] = await Promise.all([
-        adminService.getUsers(),
-        adminService.getCandidates(),
-        adminService.getEmployers(),
-        adminService.getJobs(),
-      ]);
-      setUsers(u);
-      setCandidates(c);
-      setEmployers(e);
-      setJobs(j);
-    } catch {
-      toast.error('Failed to load admin data');
-    }
-    setLoading(false);
+  const { data: activity } = useQuery({
+    queryKey: ['admin-activity'],
+    queryFn: () => adminService.getActivity(),
+    enabled: tab === 'overview',
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: () => adminService.getUsers(),
+    enabled: tab === 'users',
+  });
+
+  const { data: candidates } = useQuery({
+    queryKey: ['admin-candidates'],
+    queryFn: () => adminService.getCandidates(),
+    enabled: tab === 'candidates',
+  });
+
+  const { data: employers } = useQuery({
+    queryKey: ['admin-employers'],
+    queryFn: () => adminService.getEmployers(),
+    enabled: tab === 'employers',
+  });
+
+  const { data: jobs } = useQuery({
+    queryKey: ['admin-jobs'],
+    queryFn: () => adminService.getJobs(),
+    enabled: tab === 'jobs',
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => adminService.deleteUser(userId),
+    onSuccess: () => {
+      toast.success('User deleted');
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-candidates'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-employers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Delete failed'),
+  });
+
+  const jobStatusMutation = useMutation({
+    mutationFn: ({ jobId, status }: { jobId: string; status: string }) => adminService.updateJobStatus(jobId, status),
+    onSuccess: () => {
+      toast.success('Job status updated');
+      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Update failed'),
+  });
+
+  const subMutation = useMutation({
+    mutationFn: ({ employerId, planType }: { employerId: string; planType: string }) =>
+      adminService.updateEmployerSubscription(employerId, planType),
+    onSuccess: () => {
+      toast.success('Subscription updated');
+      queryClient.invalidateQueries({ queryKey: ['admin-employers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Update failed'),
+  });
+
+  const tabs = [
+    { key: 'overview' as const, label: 'Overview' },
+    { key: 'users' as const, label: `Users (${stats?.totalUsers || 0})` },
+    { key: 'candidates' as const, label: `Candidates (${stats?.totalCandidates || 0})` },
+    { key: 'employers' as const, label: `Employers (${stats?.totalEmployers || 0})` },
+    { key: 'jobs' as const, label: `Jobs (${stats?.totalJobs || 0})` },
+  ];
+
+  const filterItems = (items: any[] | undefined, fields: string[]) => {
+    if (!items) return [];
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter((item: any) => fields.some((f) => item[f]?.toString().toLowerCase().includes(q)));
   };
-
-  const handleResetPassword = async () => {
-    if (!resetModal || !newPassword) return;
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-    setResetting(true);
-    try {
-      await adminService.resetPassword(resetModal.userId, newPassword);
-      toast.success(`Password reset for ${resetModal.email}`);
-      setResetModal(null);
-      setNewPassword('');
-    } catch {
-      toast.error('Failed to reset password');
-    }
-    setResetting(false);
-  };
-
-  const handleDelete = async (userId: string, email: string) => {
-    if (!confirm(`Delete user ${email}? This cannot be undone.`)) return;
-    try {
-      await adminService.deleteUser(userId);
-      toast.success(`Deleted ${email}`);
-      loadData();
-    } catch {
-      toast.error('Failed to delete user');
-    }
-  };
-
-  const q = search.toLowerCase();
-
-  const filteredUsers = users.filter(
-    (u) => u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
-  );
-
-  const filteredCandidates = candidates.filter(
-    (c) =>
-      c.full_name.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      (c.job_title || '').toLowerCase().includes(q) ||
-      (c.current_emirate || '').toLowerCase().includes(q)
-  );
-
-  const filteredEmployers = employers.filter(
-    (e) =>
-      e.company_name.toLowerCase().includes(q) ||
-      e.email.toLowerCase().includes(q) ||
-      (e.industry || '').toLowerCase().includes(q)
-  );
-
-  const candidatesWithCV = filteredCandidates.filter((c) => c.cv_url);
-
-  const filteredJobs = jobs.filter(
-    (j) =>
-      j.title.toLowerCase().includes(q) ||
-      j.company_name.toLowerCase().includes(q) ||
-      (j.industry || '').toLowerCase().includes(q) ||
-      j.emirate.toLowerCase().includes(q)
-  );
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Admin Dashboard | CV Hive</title>
+      </Helmet>
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600 mb-8">
-          {users.length} users &middot; {candidates.length} candidates &middot; {employers.length} employers &middot; {jobs.length} jobs
-        </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Admin Dashboard</h1>
 
         {/* Tabs */}
         <div className="flex overflow-x-auto space-x-1 bg-gray-200 rounded-lg p-1 mb-6">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => { setTab(t.key); setSearch(''); }}
-              className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
-                tab === t.key
-                  ? 'bg-white text-primary shadow'
-                  : 'text-gray-600 hover:text-gray-900'
+              className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
+                tab === t.key ? 'bg-white text-primary shadow' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               {t.label}
-              <span className="ml-1 text-xs text-gray-400">
-                {t.key === 'registers' && `(${users.length})`}
-                {t.key === 'candidates' && `(${candidates.length})`}
-                {t.key === 'employers' && `(${employers.length})`}
-                {t.key === 'cvs' && `(${candidates.filter((c) => c.cv_url).length})`}
-                {t.key === 'jobs' && `(${jobs.length})`}
-              </span>
             </button>
           ))}
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search by name, email, role, job title..."
-            className="input w-full"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        {/* Overview Tab */}
+        {tab === 'overview' && (
+          <div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {[
+                { label: 'Total Users', value: stats?.totalUsers || 0, icon: '👥', color: 'bg-primary-50 text-primary' },
+                { label: 'Candidates', value: stats?.totalCandidates || 0, icon: '📄', color: 'bg-green-50 text-green-600' },
+                { label: 'Employers', value: stats?.totalEmployers || 0, icon: '🏢', color: 'bg-purple-50 text-purple-600' },
+                { label: 'Active Jobs', value: stats?.activeJobs || 0, icon: '💼', color: 'bg-orange-50 text-orange-600' },
+                { label: 'Total Jobs', value: stats?.totalJobs || 0, icon: '📋', color: 'bg-blue-50 text-blue-600' },
+                { label: 'Applications', value: stats?.totalApplications || 0, icon: '📨', color: 'bg-indigo-50 text-indigo-600' },
+                { label: 'Paid Postings', value: stats?.paidJobPostings || 0, icon: '💳', color: 'bg-emerald-50 text-emerald-600' },
+                { label: 'Est. Revenue', value: `AED ${((stats?.paidJobPostings || 0) * 100).toLocaleString()}`, icon: '💰', color: 'bg-yellow-50 text-yellow-600' },
+              ].map((stat) => (
+                <div key={stat.label} className={`card ${stat.color} border-0`}>
+                  <div className="text-2xl mb-1">{stat.icon}</div>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="text-sm opacity-70">{stat.label}</div>
+                </div>
+              ))}
+            </div>
 
-        {/* New Registers Tab */}
-        {tab === 'registers' && (
-          <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-3 pr-4">Email</th>
-                  <th className="pb-3 pr-4">Role</th>
-                  <th className="pb-3 pr-4">Verified</th>
-                  <th className="pb-3 pr-4">Registered</th>
-                  <th className="pb-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 pr-4">{u.email}</td>
-                    <td className="py-3 pr-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
-                        u.role === 'EMPLOYER' ? 'bg-purple-100 text-purple-700' :
-                        'bg-primary-100 text-primary-700'
-                      }`}>
-                        {u.role}
+            {stats?.subscriptionBreakdown && stats.subscriptionBreakdown.length > 0 && (
+              <div className="card mb-8">
+                <h3 className="font-semibold mb-3">Subscription Breakdown</h3>
+                <div className="flex flex-wrap gap-4">
+                  {stats.subscriptionBreakdown.map((sub: any) => (
+                    <div key={sub.plan_type} className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-1 rounded font-medium ${PLAN_COLORS[sub.plan_type] || 'bg-gray-100 text-gray-700'}`}>
+                        {sub.plan_type}
                       </span>
-                    </td>
-                    <td className="py-3 pr-4">
-                      {u.email_verified ? (
-                        <span className="text-green-600">Yes</span>
-                      ) : (
-                        <span className="text-red-500">No</span>
-                      )}
-                    </td>
-                    <td className="py-3 pr-4 text-gray-500">
-                      {new Date(u.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setResetModal({ userId: u.id, email: u.email })}
-                          className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-                        >
-                          Reset Password
-                        </button>
-                        {u.role !== 'ADMIN' && (
-                          <button
-                            onClick={() => handleDelete(u.id, u.email)}
-                            className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
-                          >
-                            Delete
-                          </button>
-                        )}
+                      <span className="text-sm text-gray-600">{sub.count} employers</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="card">
+              <h3 className="font-semibold mb-4">Recent Activity</h3>
+              {!activity || activity.length === 0 ? (
+                <p className="text-sm text-gray-500">No recent activity</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {activity.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-start gap-3 text-sm border-b border-gray-100 pb-2 last:border-0">
+                      <span className="text-lg">
+                        {item.type === 'user_registered' ? '👤' :
+                         item.type === 'job_posted' ? '💼' : '📩'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium">
+                          {item.type === 'user_registered' ? 'New registration' :
+                           item.type === 'job_posted' ? 'Job posted' : 'Application submitted'}
+                        </span>
+                        <span className="text-gray-500"> — {item.detail}</span>
+                        {item.meta && <span className="text-gray-400 text-xs ml-1">({item.meta})</span>}
                       </div>
-                    </td>
+                      <span className="text-xs text-gray-400 whitespace-nowrap">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {tab === 'users' && (
+          <div>
+            <input type="text" placeholder="Search by email or role..." value={search} onChange={(e) => setSearch(e.target.value)} className="input mb-4 max-w-md" />
+            <div className="card overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="pb-2 pr-4">Email</th>
+                    <th className="pb-2 pr-4">Role</th>
+                    <th className="pb-2 pr-4">Verified</th>
+                    <th className="pb-2 pr-4">Registered</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
-                ))}
-                {filteredUsers.length === 0 && (
-                  <tr><td colSpan={5} className="py-8 text-center text-gray-400">No users found</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filterItems(users, ['email', 'role']).map((u: any) => (
+                    <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-2 pr-4 font-medium">{u.email}</td>
+                      <td className="py-2 pr-4">
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
+                          u.role === 'EMPLOYER' ? 'bg-purple-100 text-purple-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>{u.role}</span>
+                      </td>
+                      <td className="py-2 pr-4">
+                        {u.email_verified ? <span className="text-green-600">✓</span> : <span className="text-red-600">✗</span>}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="py-2">
+                        {u.role !== 'ADMIN' && (
+                          <button onClick={() => { if (window.confirm(`Delete ${u.email}?`)) deleteMutation.mutate(u.id); }} className="text-xs text-red-600 hover:text-red-800">Delete</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Candidates Tab */}
         {tab === 'candidates' && (
-          <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-3 pr-4">Name</th>
-                  <th className="pb-3 pr-4">Email</th>
-                  <th className="pb-3 pr-4">Job Title</th>
-                  <th className="pb-3 pr-4">Emirate</th>
-                  <th className="pb-3 pr-4">Visa</th>
-                  <th className="pb-3 pr-4">Experience</th>
-                  <th className="pb-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCandidates.map((c) => (
-                  <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 pr-4 font-medium">{c.full_name}</td>
-                    <td className="py-3 pr-4">{c.email}</td>
-                    <td className="py-3 pr-4">{c.job_title || '—'}</td>
-                    <td className="py-3 pr-4">{(c.current_emirate || '—').replace(/_/g, ' ')}</td>
-                    <td className="py-3 pr-4">{(c.visa_status || '—').replace(/_/g, ' ')}</td>
-                    <td className="py-3 pr-4">{c.total_experience_years != null ? `${c.total_experience_years} yrs` : '—'}</td>
-                    <td className="py-3">
-                      <button
-                        onClick={() => setResetModal({ userId: c.user_id, email: c.email })}
-                        className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-                      >
-                        Reset Password
-                      </button>
-                    </td>
+          <div>
+            <input type="text" placeholder="Search by name, email, or job title..." value={search} onChange={(e) => setSearch(e.target.value)} className="input mb-4 max-w-md" />
+            <div className="card overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="pb-2 pr-4">Name</th>
+                    <th className="pb-2 pr-4">Email</th>
+                    <th className="pb-2 pr-4">Job Title</th>
+                    <th className="pb-2 pr-4">Emirate</th>
+                    <th className="pb-2 pr-4">Experience</th>
+                    <th className="pb-2 pr-4">Registered</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
-                ))}
-                {filteredCandidates.length === 0 && (
-                  <tr><td colSpan={7} className="py-8 text-center text-gray-400">No candidates found</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filterItems(candidates, ['full_name', 'email', 'job_title']).map((c: any) => (
+                    <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-2 pr-4 font-medium">{c.full_name}</td>
+                      <td className="py-2 pr-4 text-gray-500">{c.email}</td>
+                      <td className="py-2 pr-4">{c.job_title || '—'}</td>
+                      <td className="py-2 pr-4">{c.current_emirate?.replace(/_/g, ' ') || '—'}</td>
+                      <td className="py-2 pr-4">{c.total_experience_years ? `${c.total_experience_years}y` : '—'}</td>
+                      <td className="py-2 pr-4 text-gray-500">{new Date(c.registered_at).toLocaleDateString()}</td>
+                      <td className="py-2">
+                        <button onClick={() => { if (window.confirm(`Delete candidate ${c.full_name}?`)) deleteMutation.mutate(c.user_id); }} className="text-xs text-red-600 hover:text-red-800">Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Employers Tab */}
         {tab === 'employers' && (
-          <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-3 pr-4">Company</th>
-                  <th className="pb-3 pr-4">Email</th>
-                  <th className="pb-3 pr-4">Industry</th>
-                  <th className="pb-3 pr-4">Registered</th>
-                  <th className="pb-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployers.map((e) => (
-                  <tr key={e.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 pr-4 font-medium">{e.company_name}</td>
-                    <td className="py-3 pr-4">{e.email}</td>
-                    <td className="py-3 pr-4">{e.industry || '—'}</td>
-                    <td className="py-3 pr-4 text-gray-500">
-                      {new Date(e.registered_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3">
-                      <button
-                        onClick={() => setResetModal({ userId: e.user_id, email: e.email })}
-                        className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-                      >
-                        Reset Password
-                      </button>
-                    </td>
+          <div>
+            <input type="text" placeholder="Search by company name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="input mb-4 max-w-md" />
+            <div className="card overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="pb-2 pr-4">Company</th>
+                    <th className="pb-2 pr-4">Email</th>
+                    <th className="pb-2 pr-4">Industry</th>
+                    <th className="pb-2 pr-4">Plan</th>
+                    <th className="pb-2 pr-4">Reveals</th>
+                    <th className="pb-2 pr-4">Registered</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
-                ))}
-                {filteredEmployers.length === 0 && (
-                  <tr><td colSpan={5} className="py-8 text-center text-gray-400">No employers found</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* CVs Tab */}
-        {tab === 'cvs' && (
-          <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-3 pr-4">Name</th>
-                  <th className="pb-3 pr-4">Email</th>
-                  <th className="pb-3 pr-4">Job Title</th>
-                  <th className="pb-3 pr-4">Emirate</th>
-                  <th className="pb-3">CV</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidatesWithCV.map((c) => (
-                  <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 pr-4 font-medium">{c.full_name}</td>
-                    <td className="py-3 pr-4">{c.email}</td>
-                    <td className="py-3 pr-4">{c.job_title || '—'}</td>
-                    <td className="py-3 pr-4">{(c.current_emirate || '—').replace(/_/g, ' ')}</td>
-                    <td className="py-3">
-                      <a
-                        href={`${API_BASE}${c.cv_url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-xs font-medium"
-                      >
-                        Download CV
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-                {candidatesWithCV.length === 0 && (
-                  <tr><td colSpan={5} className="py-8 text-center text-gray-400">No CVs uploaded yet</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filterItems(employers, ['company_name', 'email', 'industry']).map((emp: any) => (
+                    <tr key={emp.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-2 pr-4 font-medium">{emp.company_name}</td>
+                      <td className="py-2 pr-4 text-gray-500">{emp.email}</td>
+                      <td className="py-2 pr-4">{emp.industry || '—'}</td>
+                      <td className="py-2 pr-4">
+                        <select value={emp.plan_type || 'DEMO'} onChange={(e) => subMutation.mutate({ employerId: emp.id, planType: e.target.value })} className="text-xs px-2 py-1 rounded border border-gray-200 bg-white cursor-pointer">
+                          <option value="DEMO">DEMO</option>
+                          <option value="PROFESSIONAL">PROFESSIONAL</option>
+                          <option value="ENTERPRISE">ENTERPRISE</option>
+                        </select>
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500">
+                        {emp.contact_reveals_used || 0}/{emp.contact_reveals_limit === -1 ? '∞' : (emp.contact_reveals_limit || 0)}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500">{new Date(emp.registered_at).toLocaleDateString()}</td>
+                      <td className="py-2">
+                        <button onClick={() => { if (window.confirm(`Delete ${emp.company_name}?`)) deleteMutation.mutate(emp.user_id); }} className="text-xs text-red-600 hover:text-red-800">Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Jobs Tab */}
         {tab === 'jobs' && (
-          <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-3 pr-4">Title</th>
-                  <th className="pb-3 pr-4">Company</th>
-                  <th className="pb-3 pr-4">Industry</th>
-                  <th className="pb-3 pr-4">Emirate</th>
-                  <th className="pb-3 pr-4">Type</th>
-                  <th className="pb-3 pr-4">Status</th>
-                  <th className="pb-3 pr-4">Views</th>
-                  <th className="pb-3 pr-4">Apps</th>
-                  <th className="pb-3">Posted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredJobs.map((j) => (
-                  <tr key={j.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 pr-4 font-medium">{j.title}</td>
-                    <td className="py-3 pr-4">{j.company_name}</td>
-                    <td className="py-3 pr-4">{j.industry || '—'}</td>
-                    <td className="py-3 pr-4">{j.emirate.replace(/_/g, ' ')}</td>
-                    <td className="py-3 pr-4">{j.job_type.replace(/_/g, ' ')}</td>
-                    <td className="py-3 pr-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        j.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                        j.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {j.status}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-500">{j.views_count}</td>
-                    <td className="py-3 pr-4 text-gray-500">{j.applications_count}</td>
-                    <td className="py-3 text-gray-500">
-                      {new Date(j.created_at).toLocaleDateString()}
-                    </td>
+          <div>
+            <input type="text" placeholder="Search by title or company..." value={search} onChange={(e) => setSearch(e.target.value)} className="input mb-4 max-w-md" />
+            <div className="card overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="pb-2 pr-4">Title</th>
+                    <th className="pb-2 pr-4">Company</th>
+                    <th className="pb-2 pr-4">Status</th>
+                    <th className="pb-2 pr-4">Views</th>
+                    <th className="pb-2 pr-4">Apps</th>
+                    <th className="pb-2 pr-4">Posted</th>
+                    <th className="pb-2 pr-4">Expires</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
-                ))}
-                {filteredJobs.length === 0 && (
-                  <tr><td colSpan={9} className="py-8 text-center text-gray-400">No jobs found</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filterItems(jobs, ['title', 'company_name']).map((job: any) => (
+                    <tr key={job.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-2 pr-4 font-medium max-w-[200px] truncate">{job.title}</td>
+                      <td className="py-2 pr-4 text-gray-500">{job.company_name}</td>
+                      <td className="py-2 pr-4">
+                        <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[job.status] || 'bg-gray-100 text-gray-600'}`}>{job.status}</span>
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500">{job.views_count}</td>
+                      <td className="py-2 pr-4 text-gray-500">{job.applications_count}</td>
+                      <td className="py-2 pr-4 text-gray-500">{new Date(job.created_at).toLocaleDateString()}</td>
+                      <td className="py-2 pr-4 text-gray-500">{job.expires_at ? new Date(job.expires_at).toLocaleDateString() : '—'}</td>
+                      <td className="py-2">
+                        <select value={job.status} onChange={(e) => jobStatusMutation.mutate({ jobId: job.id, status: e.target.value })} className="text-xs px-2 py-1 rounded border border-gray-200 bg-white cursor-pointer">
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="PAUSED">PAUSED</option>
+                          <option value="CLOSED">CLOSED</option>
+                          <option value="EXPIRED">EXPIRED</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Reset Password Modal */}
-      {resetModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-2">Reset Password</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Set a new password for <strong>{resetModal.email}</strong>
-            </p>
-            <input
-              type="text"
-              placeholder="New password (min 6 characters)"
-              className="input w-full mb-4"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => { setResetModal(null); setNewPassword(''); }}
-                className="btn btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleResetPassword}
-                disabled={resetting || newPassword.length < 6}
-                className="btn btn-primary"
-              >
-                {resetting ? 'Resetting...' : 'Reset Password'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Footer />
     </div>
   );
 }

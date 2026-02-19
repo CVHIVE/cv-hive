@@ -23,7 +23,7 @@ export const updateProfile = async (userId: string, data: any) => {
     profileVisible: 'profile_visible', industry: 'industry',
     desiredJobTitles: 'desired_job_titles', preferredEmirate: 'preferred_emirate',
     education: 'education', skills: 'skills', noticePeriod: 'notice_period',
-    cvVisibility: 'cv_visibility',
+    cvVisibility: 'cv_visibility', professionalSummary: 'professional_summary',
   };
 
   for (const [key, col] of Object.entries(columnMap)) {

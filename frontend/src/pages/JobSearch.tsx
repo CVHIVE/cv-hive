@@ -144,6 +144,34 @@ export default function JobSearch() {
                   />
                 </div>
 
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Date Posted</h4>
+                  <select
+                    className="input"
+                    value={(filters as any).postedWithin || ''}
+                    onChange={(e) => setFilters({ ...filters, postedWithin: e.target.value || undefined, page: 1 } as any)}
+                  >
+                    <option value="">Any Time</option>
+                    <option value="today">Today</option>
+                    <option value="3days">Last 3 Days</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                  </select>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Sort By</h4>
+                  <select
+                    className="input"
+                    value={(filters as any).sort || ''}
+                    onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined, page: 1 } as any)}
+                  >
+                    <option value="">Most Recent</option>
+                    <option value="salary_desc">Salary: High to Low</option>
+                    <option value="salary_asc">Salary: Low to High</option>
+                  </select>
+                </div>
+
                 <button
                   onClick={() => { setFilters({ page: 1, limit: 20 }); setTitleInput(''); }}
                   className="btn btn-secondary w-full text-sm"

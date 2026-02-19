@@ -63,6 +63,7 @@ async function seed() {
       education VARCHAR(255),
       skills TEXT,
       notice_period VARCHAR(50),
+      professional_summary TEXT,
       cv_visibility VARCHAR(20) DEFAULT 'PUBLIC',
       profile_visible BOOLEAN DEFAULT TRUE,
       profile_slug VARCHAR(255) UNIQUE,
@@ -294,6 +295,13 @@ async function seed() {
     [employerId, employerUserId, 'TechHub UAE', 'Technology', 'techhub-uae',
      'Leading technology company in the UAE specializing in innovative software solutions and digital transformation.',
      'https://techhub.ae', '50-200', 2019, 'Dubai, UAE']
+  );
+
+  // ── Demo Employer Subscription ────────────────────────
+  await db.query(
+    `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used, current_period_start, current_period_end)
+     VALUES ($1, $2, 'DEMO', 'ACTIVE', 0, 0, NOW(), NOW() + INTERVAL '24 hours')`,
+    [uuidv4(), employerId]
   );
 
   // ── Sample Jobs ─────────────────────────────────────

@@ -139,3 +139,17 @@ export const changePassword = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const deleteAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required to delete account' });
+    }
+    const result = await authService.deleteAccount(userId, password);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};

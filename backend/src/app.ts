@@ -13,7 +13,6 @@ import jobAlertRoutes from './modules/jobAlerts/jobAlerts.routes';
 import subscriptionRoutes from './modules/subscriptions/subscriptions.routes';
 import webhookRoutes from './modules/webhooks/stripe.routes';
 import analyticsRoutes from './modules/analytics/analytics.routes';
-import paymentRoutes from './modules/payments/payments.routes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -93,7 +92,7 @@ app.use('/api/v1/jobs', jobRoutes);
 app.use('/api/v1/job-alerts', jobAlertRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/payment-methods', paymentRoutes);
+// Payment methods removed - Stripe Checkout handles all payments securely
 
 // Error handler (must be last)
 app.use(errorHandler);

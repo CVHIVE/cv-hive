@@ -17,5 +17,6 @@ router.post('/resend-verification-public', authController.resendVerificationByEm
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/change-password', authenticate, authController.changePassword);
+router.delete('/account', authenticate, authController.deleteAccount);
 
 export default router;

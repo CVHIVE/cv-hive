@@ -34,4 +34,7 @@ export const authService = {
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post('/auth/change-password', { currentPassword, newPassword }).then((r) => r.data),
+
+  deleteAccount: (password: string) =>
+    api.delete('/auth/account', { data: { password } }).then((r) => r.data),
 };

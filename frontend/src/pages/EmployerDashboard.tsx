@@ -15,6 +15,7 @@ export default function EmployerDashboard() {
   const { data: jobs, isLoading } = useEmployerJobs();
   const { mutate: closeJob } = useCloseJob();
   const { mutate: payForJob, isPending: isPaying } = usePayForJob();
+  const [reposting, setReposting] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [tab, setTab] = useState<'jobs' | 'applications' | 'analytics' | 'subscription'>('jobs');
   const { data: applications } = useJobApplications(selectedJobId || '');
@@ -89,6 +90,22 @@ export default function EmployerDashboard() {
   });
 
   const API_BASE = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+
+  const handleRepostJob = async (jobId: string) => {
+    setReposting(jobId);
+    try {
+      const result = await jobService.repostJob(jobId);
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        toast.success('Job reposted! Redirecting to payment...');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to repost job');
+    } finally {
+      setReposting(null);
+    }
+  };
 
   const STATUS_OPTIONS = ['PENDING', 'REVIEWED', 'SHORTLISTED', 'REJECTED', 'HIRED'] as const;
   const STATUS_COLORS: Record<string, string> = {
@@ -315,6 +332,15 @@ export default function EmployerDashboard() {
                           className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200"
                         >
                           Close
+                        </button>
+                      )}
+                      {(job.status === 'EXPIRED' || job.status === 'CLOSED') && (
+                        <button
+                          onClick={() => handleRepostJob(job.id)}
+                          disabled={reposting === job.id}
+                          className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded hover:bg-accent/20 font-medium"
+                        >
+                          {reposting === job.id ? 'Processing...' : 'Repost (AED 100)'}
                         </button>
                       )}
                     </div>

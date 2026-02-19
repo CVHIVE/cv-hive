@@ -121,6 +121,13 @@ export const searchJobs = async (filters: any) => {
     conditions.push(`(j.experience_min IS NULL OR j.experience_min <= $${idx++})`);
     values.push(filters.experienceMax);
   }
+  if (filters.postedWithin) {
+    const days: Record<string, number> = { today: 1, '3days': 3, week: 7, month: 30 };
+    const d = days[filters.postedWithin];
+    if (d) {
+      conditions.push(`j.created_at >= NOW() - INTERVAL '${d} days'`);
+    }
+  }
 
   const where = conditions.join(' AND ');
   const page = parseInt(filters.page) || 1;
@@ -132,6 +139,11 @@ export const searchJobs = async (filters: any) => {
   );
   const total = parseInt(countResult.rows[0].count);
 
+  // Build ORDER BY based on sort parameter
+  let orderBy = 'j.created_at DESC';
+  if (filters.sort === 'salary_desc') orderBy = 'j.salary_max DESC NULLS LAST';
+  else if (filters.sort === 'salary_asc') orderBy = 'j.salary_min ASC NULLS LAST';
+
   const result = await db.query(
     `SELECT j.id, j.title, j.industry, j.job_type, j.emirate, j.salary_min, j.salary_max,
             j.salary_hidden, j.experience_min, j.experience_max, j.skills, j.created_at,
@@ -139,7 +151,7 @@ export const searchJobs = async (filters: any) => {
      FROM jobs j
      JOIN employers e ON e.id = j.employer_id
      WHERE ${where}
-     ORDER BY j.created_at DESC
+     ORDER BY ${orderBy}
      LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset]
   );
@@ -562,6 +574,31 @@ export const autoExpireJobs = async () => {
      RETURNING id, title`
   );
   return result.rows;
+};
+
+/**
+ * Repost an expired job — resets it to DRAFT so employer can pay & publish again.
+ * Creates a Stripe Checkout session for payment.
+ */
+export const repostJob = async (jobId: string, employerId: string) => {
+  const job = await db.query(
+    `SELECT id, status, title FROM jobs WHERE id = $1 AND employer_id = $2`,
+    [jobId, employerId]
+  );
+  if (job.rows.length === 0) throw new Error('Job not found');
+  if (job.rows[0].status !== 'EXPIRED' && job.rows[0].status !== 'CLOSED') {
+    throw new Error('Only expired or closed jobs can be reposted');
+  }
+
+  // Reset to DRAFT with new timestamps
+  await db.query(
+    `UPDATE jobs SET status = 'DRAFT', created_at = NOW(), expires_at = NOW() + INTERVAL '28 days', updated_at = NOW()
+     WHERE id = $1`,
+    [jobId]
+  );
+
+  // Create Stripe Checkout session for job posting payment (AED 100)
+  return payForJob(jobId, employerId);
 };
 
 /**

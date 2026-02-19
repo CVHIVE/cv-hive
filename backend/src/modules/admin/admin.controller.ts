@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as adminService from './admin.service';
-import { cleanupDemoAccounts } from '../../../scripts/cleanup-demo-accounts';
+import { cleanupDemoAccounts } from '../../services/cleanup.service';
 
 export const cleanupDemos = async (req: Request, res: Response) => {
   try {
@@ -47,19 +47,6 @@ export const getAllEmployers = async (req: Request, res: Response) => {
   }
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
-  try {
-    const { newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
-    }
-    const user = await adminService.resetPassword(req.params.id, newPassword);
-    res.json({ success: true, message: `Password reset for ${user.email}` });
-  } catch (error: any) {
-    res.status(404).json({ success: false, message: error.message });
-  }
-};
-
 export const getAllJobs = async (req: Request, res: Response) => {
   try {
     const jobs = await adminService.getAllJobs();
@@ -75,5 +62,45 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.json({ success: true, message: `User ${deleted.email} deleted` });
   } catch (error: any) {
     res.status(404).json({ success: false, message: error.message });
+  }
+};
+
+export const getPlatformStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await adminService.getPlatformStats();
+    res.json({ success: true, data: stats });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getRecentActivity = async (req: Request, res: Response) => {
+  try {
+    const activity = await adminService.getRecentActivity();
+    res.json({ success: true, data: activity });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateJobStatus = async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, message: 'Status is required' });
+    const job = await adminService.updateJobStatus(req.params.id, status);
+    res.json({ success: true, data: job });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const updateEmployerSubscription = async (req: Request, res: Response) => {
+  try {
+    const { planType } = req.body;
+    if (!planType) return res.status(400).json({ success: false, message: 'Plan type is required' });
+    const result = await adminService.updateEmployerSubscription(req.params.id, planType);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };

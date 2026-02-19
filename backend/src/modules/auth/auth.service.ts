@@ -234,3 +234,17 @@ export const changePassword = async (userId: string, currentPassword: string, ne
   await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, userId]);
   return { message: 'Password changed successfully' };
 };
+
+export const deleteAccount = async (userId: string, password: string) => {
+  const result = await db.query('SELECT password_hash, role FROM users WHERE id = $1', [userId]);
+  if (result.rows.length === 0) throw new Error('User not found');
+
+  const isValid = await comparePassword(password, result.rows[0].password_hash);
+  if (!isValid) throw new Error('Password is incorrect');
+
+  if (result.rows[0].role === 'ADMIN') throw new Error('Admin accounts cannot be self-deleted');
+
+  // CASCADE will handle related records (candidates, employers, jobs, applications, etc.)
+  await db.query('DELETE FROM users WHERE id = $1', [userId]);
+  return { message: 'Account deleted successfully' };
+};

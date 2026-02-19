@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import CandidateNav from '../components/candidate/CandidateNav';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
@@ -55,6 +56,7 @@ export default function CandidateDashboard() {
       fullName: p?.full_name || '',
       phone: p?.phone || '',
       jobTitle: p?.job_title || '',
+      professionalSummary: p?.professional_summary || '',
       visaStatus: p?.visa_status,
       currentEmirate: p?.current_emirate,
       availabilityStatus: p?.availability_status,
@@ -86,7 +88,7 @@ export default function CandidateDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
         <title>My Dashboard | CV Hive</title>
         <meta name="description" content="Manage your CV Hive profile, track applications, and update your settings." />
@@ -294,9 +296,25 @@ export default function CandidateDashboard() {
                   />
                 </div>
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label>
+                <textarea
+                  className="input min-h-[100px]"
+                  rows={4}
+                  value={(form as any).professionalSummary || ''}
+                  onChange={(e) => setForm({ ...form, professionalSummary: e.target.value } as any)}
+                  placeholder="Brief summary of your experience, skills, and career goals..."
+                />
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              {p?.professional_summary && (
+                <div className="md:col-span-2 mb-2">
+                  <span className="text-gray-500 block mb-1">Professional Summary:</span>
+                  <p className="text-gray-800">{p.professional_summary}</p>
+                </div>
+              )}
               <div><span className="text-gray-500">Full Name:</span> {p?.full_name || '—'}</div>
               <div><span className="text-gray-500">Phone:</span> {p?.phone || '—'}</div>
               <div><span className="text-gray-500">Job Title:</span> {p?.job_title || '—'}</div>
@@ -491,9 +509,13 @@ export default function CandidateDashboard() {
 
         {/* Change Password */}
         <ChangePasswordSection />
+
+        {/* Delete Account */}
+        <DeleteAccountSection />
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
@@ -580,6 +602,99 @@ function ChangePasswordSection() {
           {loading ? 'Changing...' : 'Change Password'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function DeleteAccountSection() {
+  const [showModal, setShowModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (confirmText !== 'DELETE') {
+      toast.error('Please type DELETE to confirm');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authService.deleteAccount(password);
+      toast.success('Account deleted successfully');
+      logout();
+      navigate('/');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card mt-8 border-red-200">
+      <h3 className="text-xl font-semibold mb-2 text-red-600">Delete Account</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Permanently delete your account and all associated data including your profile, CV, applications, and saved jobs. This action cannot be undone.
+      </p>
+      <button
+        onClick={() => setShowModal(true)}
+        className="text-sm bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 font-medium"
+      >
+        Delete My Account
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-red-600 mb-2">Confirm Account Deletion</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This will permanently delete your account and all data. Enter your password and type <strong>DELETE</strong> to confirm.
+            </p>
+            <form onSubmit={handleDelete} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type DELETE to confirm</label>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  className="input"
+                  placeholder="DELETE"
+                  required
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowModal(false); setPassword(''); setConfirmText(''); }}
+                  className="btn btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || confirmText !== 'DELETE'}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium"
+                >
+                  {loading ? 'Deleting...' : 'Delete Forever'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

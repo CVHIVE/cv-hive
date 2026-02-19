@@ -108,7 +108,6 @@ export default function Header() {
                           <Link to="/search" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Search Candidates</Link>
                           <Link to="/bookmarked-candidates" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Bookmarked</Link>
                           <Link to="/employer-settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Settings</Link>
-                          <Link to="/payment-methods" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Payment Methods</Link>
                         </div>
                       )}
 
@@ -178,7 +177,6 @@ export default function Header() {
                 <Link to="/post-job" className={navLinkClass('/post-job')} onClick={closeMobile}>Post a Job</Link>
                 <Link to="/search" className={navLinkClass('/search')} onClick={closeMobile}>Search Candidates</Link>
                 <Link to="/employer-settings" className={navLinkClass('/employer-settings')} onClick={closeMobile}>Settings</Link>
-                <Link to="/payment-methods" className={navLinkClass('/payment-methods')} onClick={closeMobile}>Payment Methods</Link>
               </>
             )}
             {isAuthenticated && user?.role === 'CANDIDATE' && (

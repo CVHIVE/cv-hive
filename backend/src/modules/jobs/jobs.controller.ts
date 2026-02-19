@@ -220,6 +220,16 @@ export const runAutoPause = async (req: Request, res: Response) => {
   }
 };
 
+export const repostJob = async (req: Request, res: Response) => {
+  try {
+    const employer = await getEmployerId(req);
+    const result = await jobService.repostJob(req.params.id, employer);
+    res.json({ success: true, message: 'Checkout session created for repost', data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // Helpers to get employer/candidate ID from the authenticated user
 import db from '../../config/database';
 

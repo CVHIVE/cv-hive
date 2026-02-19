@@ -77,6 +77,7 @@ export interface Candidate {
   education?: string;
   skills?: string;
   notice_period?: string;
+  professional_summary?: string;
   cv_visibility?: 'PUBLIC' | 'PRIVATE';
   profile_visible: boolean;
   profile_slug: string;
@@ -146,6 +147,7 @@ export interface UpdateCandidatePayload {
   education?: string;
   skills?: string;
   noticePeriod?: string;
+  professionalSummary?: string;
   cvVisibility?: 'PUBLIC' | 'PRIVATE';
 }
 
@@ -243,6 +245,8 @@ export interface JobSearchFilters {
   jobType?: JobType;
   salaryMin?: number;
   experienceMax?: number;
+  postedWithin?: string;
+  sort?: string;
   page?: number;
   limit?: number;
 }

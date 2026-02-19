@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
@@ -6,6 +7,7 @@ import Footer from '../components/layout/Footer';
 import EmployerNav from '../components/employer/EmployerNav';
 import api from '../services/api';
 import { authService } from '../services/auth';
+import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
 export default function EmployerSettings() {
@@ -179,6 +181,9 @@ export default function EmployerSettings() {
 
         {/* Change Password */}
         <ChangePasswordSection />
+
+        {/* Delete Account */}
+        <DeleteAccountSection />
           </div>
         </div>
       </div>
@@ -269,6 +274,76 @@ function ChangePasswordSection() {
           {loading ? 'Changing...' : 'Change Password'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function DeleteAccountSection() {
+  const [showModal, setShowModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (confirmText !== 'DELETE') {
+      toast.error('Please type DELETE to confirm');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authService.deleteAccount(password);
+      toast.success('Account deleted successfully');
+      logout();
+      navigate('/');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card mt-6 border-red-200">
+      <h3 className="font-semibold mb-2 text-red-600">Delete Account</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Permanently delete your company account and all associated data including job listings, applications, and subscription. This action cannot be undone.
+      </p>
+      <button
+        onClick={() => setShowModal(true)}
+        className="text-sm bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 font-medium"
+      >
+        Delete Account
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-red-600 mb-2">Confirm Account Deletion</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This will permanently delete your account, all job listings, and company data. Enter your password and type <strong>DELETE</strong> to confirm.
+            </p>
+            <form onSubmit={handleDelete} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type DELETE to confirm</label>
+                <input type="text" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="input" placeholder="DELETE" required />
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => { setShowModal(false); setPassword(''); setConfirmText(''); }} className="btn btn-secondary flex-1">Cancel</button>
+                <button type="submit" disabled={loading || confirmText !== 'DELETE'} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium">
+                  {loading ? 'Deleting...' : 'Delete Forever'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

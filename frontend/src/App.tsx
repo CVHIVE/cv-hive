@@ -32,7 +32,7 @@ const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const MyApplications = lazy(() => import('./pages/MyApplications'));
 const SavedJobs = lazy(() => import('./pages/SavedJobs'));
-const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
+
 const BookmarkedCandidates = lazy(() => import('./pages/BookmarkedCandidates'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -152,14 +152,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/payment-methods"
-        element={
-          <ProtectedRoute roles={['EMPLOYER']}>
-            <PaymentMethods />
-          </ProtectedRoute>
-        }
-      />
+
 
       <Route path="*" element={<NotFound />} />
     </Routes>
