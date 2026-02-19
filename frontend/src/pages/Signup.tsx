@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
-import { useRegister } from '../hooks/useAuth';
+import { useRegister, useLogout } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
 import { candidateService } from '../services/candidates';
 import { authService } from '../services/auth';
@@ -42,11 +42,13 @@ export default function Signup() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { mutateAsync: register, isPending: isRegistering } = useRegister();
+  const logout = useLogout();
 
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // CV upload
   const fileRef = useRef<HTMLInputElement>(null);
@@ -166,8 +168,8 @@ export default function Signup() {
 
   const handleResendVerification = async () => {
     try {
-      await authService.resendVerification();
-      toast.success('Verification email sent');
+      await authService.resendVerificationByEmail(email);
+      toast.success('Verification email sent! Check your inbox.');
     } catch {
       toast.error('Failed to resend');
     }
@@ -225,11 +227,14 @@ export default function Signup() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" placeholder="Min 8 characters" required minLength={8} />
+                  <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="input pr-16" placeholder="Min 8 characters" required minLength={8} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm">{showPassword ? 'Hide' : 'Show'}</button>
+                  </div>
                 </div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-                  I agree to the Terms of Service & Privacy Policy
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
+                  <span>I agree to the <a href="/terms" target="_blank" className="text-blue-600 hover:underline">Terms & Conditions</a> and <a href="/privacy" target="_blank" className="text-blue-600 hover:underline">Privacy Policy</a></span>
                 </label>
                 <button type="submit" disabled={isRegistering} className="btn btn-primary w-full">
                   {isRegistering ? 'Creating Account...' : 'Create Account'}
@@ -466,8 +471,8 @@ export default function Signup() {
                   <button onClick={handleResendVerification} className="btn btn-secondary w-full">
                     Resend Verification Email
                   </button>
-                  <button onClick={() => navigate('/dashboard')} className="btn btn-primary w-full">
-                    Go to Dashboard
+                  <button onClick={() => { logout(); navigate(`/verify-email?pending=true&email=${encodeURIComponent(email)}`); }} className="btn btn-primary w-full">
+                    Continue to Verification
                   </button>
                 </div>
               </div>

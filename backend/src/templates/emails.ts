@@ -1,4 +1,4 @@
-const BASE_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const BASE_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
 
 function layout(content: string) {
   return `

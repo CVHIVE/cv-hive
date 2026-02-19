@@ -1,6 +1,7 @@
 import db from '../../config/database';
 import { v4 as uuidv4 } from 'uuid';
 import { sendApplicationNotification, sendStatusChangeNotification } from '../../services/email.service';
+import stripe from '../../config/stripe';
 
 interface CreateJobData {
   title: string;
@@ -18,6 +19,12 @@ interface CreateJobData {
 }
 
 export const createJob = async (employerId: string, data: CreateJobData) => {
+  // Block DEMO plan employers from posting jobs
+  const subCheck = await db.query('SELECT plan_type FROM subscriptions WHERE employer_id = $1', [employerId]);
+  if (subCheck.rows.length > 0 && subCheck.rows[0].plan_type === 'DEMO') {
+    throw new Error('Demo accounts cannot post jobs. Please upgrade your plan to start posting.');
+  }
+
   const id = uuidv4();
   const result = await db.query(
     `INSERT INTO jobs (id, employer_id, title, description, industry, job_type, emirate,
@@ -68,7 +75,8 @@ export const updateJob = async (jobId: string, employerId: string, data: Partial
 
 export const getJobById = async (jobId: string) => {
   const result = await db.query(
-    `SELECT j.*, e.company_name, e.industry as company_industry, u.email as employer_email
+    `SELECT j.*, e.company_name, e.industry as company_industry, u.email as employer_email,
+            e.response_rate, e.reputation_score, e.company_slug
      FROM jobs j
      JOIN employers e ON e.id = j.employer_id
      JOIN users u ON u.id = e.user_id
@@ -181,13 +189,20 @@ export const applyToJob = async (jobId: string, candidateId: string, coverLetter
 
   const id = uuidv4();
   const result = await db.query(
-    `INSERT INTO job_applications (id, job_id, candidate_id, cover_letter)
-     VALUES ($1, $2, $3, $4) RETURNING *`,
+    `INSERT INTO job_applications (id, job_id, candidate_id, cover_letter, response_deadline)
+     VALUES ($1, $2, $3, $4, NOW() + INTERVAL '7 days') RETURNING *`,
     [id, jobId, candidateId, coverLetter || null]
   );
 
   // Increment applications count
   await db.query('UPDATE jobs SET applications_count = applications_count + 1 WHERE id = $1', [jobId]);
+
+  // Increment total_applications_received on employer
+  await db.query(
+    `UPDATE employers SET total_applications_received = total_applications_received + 1
+     WHERE id = (SELECT employer_id FROM jobs WHERE id = $1)`,
+    [jobId]
+  );
 
   // Send notification email to employer (non-blocking)
   const candidate = await db.query('SELECT full_name FROM candidates WHERE id = $1', [candidateId]);
@@ -206,7 +221,7 @@ export const getApplicationsForJob = async (jobId: string, employerId: string) =
 
   const result = await db.query(
     `SELECT ja.*, c.full_name, c.job_title, c.cv_url, c.total_experience_years,
-            c.current_emirate, c.visa_status, u.email
+            c.current_emirate, c.visa_status, c.phone, u.email
      FROM job_applications ja
      JOIN candidates c ON c.id = ja.candidate_id
      JOIN users u ON u.id = c.user_id
@@ -220,7 +235,8 @@ export const getApplicationsForJob = async (jobId: string, employerId: string) =
 export const getCandidateApplications = async (candidateId: string) => {
   const result = await db.query(
     `SELECT ja.*, j.title as job_title, j.emirate, j.job_type, j.status as job_status,
-            e.company_name
+            e.company_name, e.response_rate as employer_response_rate,
+            e.reputation_score as employer_reputation_score
      FROM job_applications ja
      JOIN jobs j ON j.id = ja.job_id
      JOIN employers e ON e.id = j.employer_id
@@ -292,9 +308,40 @@ export const updateApplicationStatus = async (
 
   // Update application status
   await db.query(
-    'UPDATE job_applications SET status = $1 WHERE id = $2',
+    'UPDATE job_applications SET status = $1, responded_at = CASE WHEN responded_at IS NULL THEN NOW() ELSE responded_at END WHERE id = $2',
     [newStatus, applicationId]
   );
+
+  // Update employer response metrics if this is the first response
+  if (oldStatus === 'PENDING') {
+    // Recalculate from actual data to ensure correctness
+    const empId = app.rows[0].employer_id;
+    const totalReceived = await db.query(
+      `SELECT COUNT(*) as count FROM job_applications ja JOIN jobs j ON j.id = ja.job_id WHERE j.employer_id = $1`,
+      [empId]
+    );
+    const totalResponded = await db.query(
+      `SELECT COUNT(*) as count FROM job_applications ja JOIN jobs j ON j.id = ja.job_id WHERE j.employer_id = $1 AND ja.status != 'PENDING'`,
+      [empId]
+    );
+    const received = parseInt(totalReceived.rows[0].count) || 0;
+    const responded = parseInt(totalResponded.rows[0].count) || 0;
+    const rate = received > 0 ? (responded / received) * 100 : 0;
+
+    let reputationBoost = 0.5;
+    if (newStatus === 'REVIEWED' || newStatus === 'SHORTLISTED' || newStatus === 'HIRED') reputationBoost = 2;
+    else if (newStatus === 'REJECTED') reputationBoost = 1;
+
+    await db.query(
+      `UPDATE employers SET
+        total_applications_received = $1,
+        total_applications_responded = $2,
+        response_rate = $3,
+        reputation_score = LEAST(100, reputation_score + $4)
+       WHERE id = $5`,
+      [received, responded, rate, reputationBoost, empId]
+    );
+  }
 
   // Insert status history
   const historyId = uuidv4();
@@ -363,26 +410,166 @@ export const getRecentJobs = async (limit: number = 6) => {
 export const payForJob = async (jobId: string, employerId: string) => {
   // Verify ownership and DRAFT status
   const job = await db.query(
-    'SELECT id, status FROM jobs WHERE id = $1 AND employer_id = $2',
+    'SELECT j.id, j.title, j.status FROM jobs j WHERE j.id = $1 AND j.employer_id = $2',
     [jobId, employerId]
   );
   if (job.rows.length === 0) throw new Error('Job not found or not authorized');
   if (job.rows[0].status !== 'DRAFT') throw new Error('Job is already paid for');
 
-  // Check for active payment method
-  const card = await db.query(
-    'SELECT id FROM payment_methods WHERE employer_id = $1 AND is_default = TRUE LIMIT 1',
+  // Get employer info for Stripe customer
+  const employer = await db.query(
+    `SELECT e.id, e.company_name, u.email, u.id as user_id
+     FROM employers e JOIN users u ON u.id = e.user_id WHERE e.id = $1`,
     [employerId]
   );
-  if (card.rows.length === 0) {
-    throw new Error('No payment method on file. Please add a card first.');
+  if (employer.rows.length === 0) throw new Error('Employer not found');
+  const emp = employer.rows[0];
+
+  // Create or get Stripe customer
+  const sub = await db.query('SELECT stripe_customer_id FROM subscriptions WHERE employer_id = $1', [employerId]);
+  let customerId = sub.rows[0]?.stripe_customer_id;
+
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: emp.email,
+      metadata: { employer_id: employerId, user_id: emp.user_id },
+    });
+    customerId = customer.id;
+    // Store customer ID
+    if (sub.rows.length > 0) {
+      await db.query('UPDATE subscriptions SET stripe_customer_id = $1 WHERE employer_id = $2', [customerId, employerId]);
+    }
   }
 
-  // Charge AED 100 (in dev mode, just activate directly)
+  // Create Stripe Checkout session for one-time AED 100 payment
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'payment',
+    line_items: [{
+      price_data: {
+        currency: 'aed',
+        product_data: {
+          name: `Job Posting: ${job.rows[0].title}`,
+          description: 'Active for 28 days on CV Hive',
+        },
+        unit_amount: 10000, // AED 100 in fils
+      },
+      quantity: 1,
+    }],
+    success_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/employer-dashboard?job_payment=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/employer-dashboard?job_payment=cancelled`,
+    metadata: { job_id: jobId, employer_id: employerId, type: 'job_posting' },
+  });
+
+  return { sessionId: session.id, url: session.url };
+};
+
+export const verifyJobPaymentSession = async (sessionId: string) => {
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  if (session.payment_status !== 'paid') {
+    return { status: 'unpaid' };
+  }
+
+  const jobId = session.metadata?.job_id;
+  if (!jobId) return { status: 'paid', job_id: null };
+
+  // Check if already active
+  const job = await db.query('SELECT id, status, title FROM jobs WHERE id = $1', [jobId]);
+  if (job.rows.length === 0) return { status: 'error', message: 'Job not found' };
+
+  if (job.rows[0].status === 'ACTIVE') {
+    return { status: 'already_active', job_id: jobId, title: job.rows[0].title };
+  }
+
+  await activateJobAfterPayment(jobId);
+  return { status: 'activated', job_id: jobId, title: job.rows[0].title };
+};
+
+export const activateJobAfterPayment = async (jobId: string) => {
   const result = await db.query(
     `UPDATE jobs SET status = 'ACTIVE', expires_at = NOW() + INTERVAL '28 days', updated_at = NOW()
-     WHERE id = $1 RETURNING *`,
+     WHERE id = $1 AND status = 'DRAFT' RETURNING *`,
     [jobId]
   );
+  if (result.rows.length === 0) {
+    console.error('Failed to activate job - not found or not DRAFT:', jobId);
+    return null;
+  }
+  console.log('\u2705 Job activated after payment:', jobId);
+  return result.rows[0];
+};
+
+/**
+ * Auto-pause jobs that have unresponded applications past the 7-day deadline.
+ * Should be called by a cron job or scheduler.
+ */
+export const autoPauseUnresponsiveJobs = async () => {
+  // Find active jobs where any application has passed its 7-day response deadline without a response
+  const result = await db.query(
+    `UPDATE jobs SET status = 'PAUSED', updated_at = NOW()
+     WHERE status = 'ACTIVE'
+       AND id IN (
+         SELECT DISTINCT j.id FROM jobs j
+         JOIN job_applications ja ON ja.job_id = j.id
+         WHERE j.status = 'ACTIVE'
+           AND ja.status = 'PENDING'
+           AND ja.response_deadline < NOW()
+       )
+     RETURNING id, title`
+  );
+  return result.rows;
+};
+
+/**
+ * Auto-expire jobs past their expiry date (28 days).
+ */
+export const autoExpireJobs = async () => {
+  const result = await db.query(
+    `UPDATE jobs SET status = 'EXPIRED', updated_at = NOW()
+     WHERE status = 'ACTIVE' AND expires_at < NOW()
+     RETURNING id, title`
+  );
+  return result.rows;
+};
+
+/**
+ * Get employer response rate and reputation score.
+ */
+export const getEmployerResponseMetrics = async (employerId: string) => {
+  const result = await db.query(
+    `SELECT response_rate, reputation_score, total_applications_received, total_applications_responded
+     FROM employers WHERE id = $1`,
+    [employerId]
+  );
+  if (result.rows.length === 0) throw new Error('Employer not found');
+  return result.rows[0];
+};
+
+/**
+ * Get employer response metrics by company slug (for public profile).
+ */
+export const getEmployerResponseMetricsBySlug = async (slug: string) => {
+  const result = await db.query(
+    `SELECT response_rate, reputation_score, total_applications_received, total_applications_responded
+     FROM employers WHERE company_slug = $1`,
+    [slug]
+  );
+  if (result.rows.length === 0) throw new Error('Employer not found');
+  return result.rows[0];
+};
+
+/**
+ * Get employer response metrics by job's employer (for job detail page).
+ */
+export const getEmployerResponseMetricsByJobId = async (jobId: string) => {
+  const result = await db.query(
+    `SELECT e.response_rate, e.reputation_score, e.total_applications_received, e.total_applications_responded
+     FROM employers e
+     JOIN jobs j ON j.employer_id = e.id
+     WHERE j.id = $1`,
+    [jobId]
+  );
+  if (result.rows.length === 0) throw new Error('Employer not found');
   return result.rows[0];
 };

@@ -7,6 +7,9 @@ export const subscriptionService = {
   getStatus: () =>
     api.get('/subscriptions/status').then((r) => r.data),
 
+  verifySession: (sessionId: string) =>
+    api.post('/subscriptions/verify-session', { sessionId }).then((r) => r.data),
+
   cancel: () =>
     api.post('/subscriptions/cancel').then((r) => r.data),
 };

@@ -49,4 +49,7 @@ export const jobService = {
 
   payForJob: (id: string) =>
     api.post(`/jobs/${id}/pay`).then((r) => r.data),
+
+  verifyJobPayment: (sessionId: string) =>
+    api.post('/jobs/verify-payment', { sessionId }).then((r) => r.data),
 };

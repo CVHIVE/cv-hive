@@ -5,28 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 export const createCheckoutSession = async (employerId: string, planType: 'PROFESSIONAL' | 'ENTERPRISE') => {
   const plan = STRIPE_PLANS[planType];
 
-  // Dev mode: if no Stripe price IDs configured, activate plan directly
   if (!plan.priceId) {
-    const sub = await db.query('SELECT * FROM subscriptions WHERE employer_id = $1', [employerId]);
-    if (sub.rows.length === 0) {
-      await db.query(
-        `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used, current_period_start, current_period_end)
-         VALUES ($1, $2, $3, 'ACTIVE', $4, 0, NOW(), NOW() + INTERVAL '30 days')`,
-        [uuidv4(), employerId, planType, plan.contactRevealsLimit]
-      );
-    } else {
-      await db.query(
-        `UPDATE subscriptions SET plan_type = $1, status = 'ACTIVE', contact_reveals_limit = $2, contact_reveals_used = 0,
-         current_period_start = NOW(), current_period_end = NOW() + INTERVAL '30 days'
-         WHERE employer_id = $3`,
-        [planType, plan.contactRevealsLimit, employerId]
-      );
-    }
-    const successUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/employer-dashboard?subscription=success`;
-    return { sessionId: 'dev-mode', url: successUrl };
+    throw new Error('Stripe is not configured for this plan. Please contact support.');
   }
 
-  // Production mode: use Stripe checkout
+  // Use Stripe Checkout for secure payment
   const employer = await db.query(
     `SELECT e.id, e.company_name, u.email, u.id as user_id
      FROM employers e JOIN users u ON u.id = e.user_id WHERE e.id = $1`,
@@ -63,8 +46,8 @@ export const createCheckoutSession = async (employerId: string, planType: 'PROFE
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: plan.priceId, quantity: 1 }],
-    success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/employer-dashboard?subscription=success`,
-    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/pricing?subscription=cancelled`,
+    success_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/employer-dashboard?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/pricing?subscription=cancelled`,
     metadata: { employer_id: employerId, plan_type: planType },
   });
 
@@ -111,11 +94,37 @@ export const handleSubscriptionUpdated = async (subscription: any) => {
 
 export const handleSubscriptionDeleted = async (subscription: any) => {
   await db.query(
-    `UPDATE subscriptions SET status = 'CANCELLED', plan_type = 'BASIC',
-     contact_reveals_limit = 2, contact_reveals_used = 0
+    `UPDATE subscriptions SET status = 'CANCELLED', plan_type = 'DEMO',
+     contact_reveals_limit = 0, contact_reveals_used = 0
      WHERE stripe_subscription_id = $1`,
     [subscription.id]
   );
+};
+
+export const verifyCheckoutSession = async (sessionId: string, employerId: string) => {
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  if (session.payment_status !== 'paid') {
+    return { status: 'unpaid', plan_type: null };
+  }
+
+  const planType = session.metadata?.plan_type;
+  if (!planType) {
+    return { status: 'paid', plan_type: null };
+  }
+
+  // Check if already activated
+  const existing = await db.query(
+    'SELECT plan_type FROM subscriptions WHERE employer_id = $1',
+    [employerId]
+  );
+  if (existing.rows[0]?.plan_type === planType) {
+    return { status: 'already_active', plan_type: planType };
+  }
+
+  // Activate the subscription (same logic as webhook handler)
+  await handleCheckoutComplete(session);
+  return { status: 'activated', plan_type: planType };
 };
 
 export const cancelSubscription = async (employerId: string) => {
@@ -123,7 +132,7 @@ export const cancelSubscription = async (employerId: string) => {
     'SELECT stripe_subscription_id, plan_type FROM subscriptions WHERE employer_id = $1',
     [employerId]
   );
-  if (sub.rows.length === 0 || sub.rows[0].plan_type === 'BASIC') {
+  if (sub.rows.length === 0 || sub.rows[0].plan_type === 'DEMO') {
     throw new Error('No active subscription found');
   }
 
@@ -147,7 +156,7 @@ export const getSubscriptionStatus = async (employerId: string) => {
     [employerId]
   );
   if (result.rows.length === 0) {
-    return { plan_type: 'BASIC', status: 'ACTIVE', contact_reveals_limit: 2, contact_reveals_used: 0 };
+    return { plan_type: 'DEMO', status: 'ACTIVE', contact_reveals_limit: 0, contact_reveals_used: 0 };
   }
   return result.rows[0];
 };
@@ -166,7 +175,7 @@ export const incrementContactReveal = async (employerId: string) => {
   if (result.rowCount === 0) {
     await db.query(
       `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used)
-       VALUES ($1, $2, 'BASIC', 'ACTIVE', 2, 1)`,
+       VALUES ($1, $2, 'DEMO', 'ACTIVE', 0, 1)`,
       [uuidv4(), employerId]
     );
   }

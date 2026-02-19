@@ -59,7 +59,8 @@ export const updateLogo = async (userId: string, logoUrl: string) => {
 export const getPublicProfile = async (slug: string) => {
   const result = await db.query(
     `SELECT e.company_name, e.industry, e.company_logo_url, e.company_slug, e.description,
-            e.website, e.company_size, e.founded_year, e.location, e.created_at
+            e.website, e.company_size, e.founded_year, e.location, e.created_at,
+            e.response_rate, e.reputation_score, e.total_applications_received, e.total_applications_responded
      FROM employers e
      WHERE e.company_slug = $1`,
     [slug]

@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import { useEmployerJobs, useCloseJob, usePayForJob, useJobApplications, useUpdateApplicationStatus } from '../hooks/useJobs';
 import api from '../services/api';
 import { subscriptionService } from '../services/subscriptions';
+import { jobService } from '../services/jobs';
 import toast from 'react-hot-toast';
 
 export default function EmployerDashboard() {
@@ -15,6 +16,50 @@ export default function EmployerDashboard() {
   const [tab, setTab] = useState<'jobs' | 'applications' | 'analytics' | 'subscription'>('jobs');
   const { data: applications } = useJobApplications(selectedJobId || '');
   const { mutate: updateStatus } = useUpdateApplicationStatus();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+
+  // Handle subscription success/cancel redirect from Stripe
+  useEffect(() => {
+    const subStatus = searchParams.get('subscription');
+    const jobPayment = searchParams.get('job_payment');
+    const sessionId = searchParams.get('session_id');
+
+    if (subStatus === 'success' && sessionId) {
+      subscriptionService.verifySession(sessionId)
+        .then((result) => {
+          if (result.status === 'activated' || result.status === 'already_active') {
+            toast.success(`Successfully upgraded to ${result.plan_type} plan!`);
+            queryClient.invalidateQueries({ queryKey: ['subscription-status'] });
+          } else {
+            toast.error('Payment not completed. Please try again.');
+          }
+        })
+        .catch(() => toast.error('Could not verify payment. Please contact support.'));
+      searchParams.delete('subscription');
+      searchParams.delete('session_id');
+      setSearchParams(searchParams, { replace: true });
+      setTab('subscription');
+    } else if (jobPayment === 'success' && sessionId) {
+      jobService.verifyJobPayment(sessionId)
+        .then((result) => {
+          if (result.status === 'activated' || result.status === 'already_active') {
+            toast.success(`Job "${result.title}" is now live!`);
+            queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
+          } else {
+            toast.error('Job payment not completed. Please try again.');
+          }
+        })
+        .catch(() => toast.error('Could not verify job payment. Please contact support.'));
+      searchParams.delete('job_payment');
+      searchParams.delete('session_id');
+      setSearchParams(searchParams, { replace: true });
+    } else if (jobPayment === 'cancelled') {
+      toast('Job payment was cancelled. You can pay later from your dashboard.', { icon: '\u26a0\ufe0f' });
+      searchParams.delete('job_payment');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const { data: analytics } = useQuery({
     queryKey: ['analytics', 'dashboard'],
@@ -22,11 +67,17 @@ export default function EmployerDashboard() {
     enabled: tab === 'analytics',
   });
 
+  const { data: employerProfile } = useQuery({
+    queryKey: ['employer-profile'],
+    queryFn: () => api.get('/employers/profile').then((r) => r.data),
+  });
+
   const { data: subscription } = useQuery({
     queryKey: ['subscription-status'],
     queryFn: () => subscriptionService.getStatus(),
-    enabled: tab === 'subscription',
   });
+
+  const [paymentRedirecting, setPaymentRedirecting] = useState(false);
 
   const cancelMutation = useMutation({
     mutationFn: () => subscriptionService.cancel(),
@@ -45,6 +96,25 @@ export default function EmployerDashboard() {
     HIRED: 'bg-green-100 text-green-700',
   };
 
+  // Check if employer is on DEMO plan and has a pending paid plan to complete
+  const storedPendingPlan = typeof window !== 'undefined' ? localStorage.getItem('pendingPlan') : null;
+  const needsPayment = subscription && subscription.plan_type === 'DEMO' && storedPendingPlan && ['PROFESSIONAL', 'ENTERPRISE'].includes(storedPendingPlan);
+
+  const handleCompletePayment = async () => {
+    if (!storedPendingPlan) return;
+    setPaymentRedirecting(true);
+    try {
+      const checkout = await subscriptionService.createCheckout(storedPendingPlan);
+      localStorage.removeItem('pendingPlan');
+      if (checkout.url) {
+        window.location.href = checkout.url;
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to start checkout');
+      setPaymentRedirecting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -59,6 +129,43 @@ export default function EmployerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+
+      {/* Paywall: force payment for pending paid plan */}
+      {needsPayment && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl">
+            <div className="text-5xl mb-4">🔒</div>
+            <h2 className="text-2xl font-bold mb-2">Complete Your Payment</h2>
+            <p className="text-gray-600 mb-4">
+              Your email is verified! Complete your{' '}
+              <span className="font-bold text-blue-600">
+                {storedPendingPlan === 'PROFESSIONAL' ? 'Professional' : 'Enterprise'}
+              </span>{' '}
+              plan payment to unlock all employer features.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              You're currently on the Demo plan. Job posting, candidate contact reveals, and other features
+              are only available with a paid subscription.
+            </p>
+            <button
+              onClick={handleCompletePayment}
+              disabled={paymentRedirecting}
+              className="btn btn-primary w-full mb-3"
+            >
+              {paymentRedirecting ? 'Redirecting to Payment...' : 'Complete Payment Now'}
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('pendingPlan');
+                window.location.reload();
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700 hover:underline"
+            >
+              Continue on Demo plan instead
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -83,6 +190,47 @@ export default function EmployerDashboard() {
           ))}
         </div>
 
+        {/* Response Rate & Reputation Banner */}
+        {employerProfile && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="card flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Response Rate</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {parseFloat(employerProfile.response_rate || 0).toFixed(0)}%
+                </div>
+                <div className="text-xs text-gray-400">
+                  {employerProfile.total_applications_responded || 0} of {employerProfile.total_applications_received || 0} responded
+                </div>
+              </div>
+            </div>
+            <div className="card flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Reputation Score</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {parseFloat(employerProfile.reputation_score || 0).toFixed(1)}
+                  <span className="text-sm font-normal text-gray-400">/100</span>
+                </div>
+                <div className="text-xs text-gray-400">
+                  {parseFloat(employerProfile.reputation_score || 0) >= 70 ? 'Excellent' :
+                   parseFloat(employerProfile.reputation_score || 0) >= 40 ? 'Good' :
+                   parseFloat(employerProfile.reputation_score || 0) > 0 ? 'Building' : 'New'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* My Jobs Tab */}
         {tab === 'jobs' && (
           <div className="space-y-4">
@@ -101,17 +249,34 @@ export default function EmployerDashboard() {
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           job.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
                           job.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700' :
+                          job.status === 'PAUSED' ? 'bg-orange-100 text-orange-700' :
+                          job.status === 'EXPIRED' ? 'bg-red-100 text-red-700' :
                           'bg-gray-100 text-gray-600'
                         }`}>
                           {job.status}
                         </span>
                       </div>
+                      {job.status === 'PAUSED' && (
+                        <p className="text-xs text-orange-600 mt-1">
+                          This job was paused due to unresponded applications. Respond to pending applicants to reactivate.
+                        </p>
+                      )}
+                      {job.status === 'EXPIRED' && (
+                        <p className="text-xs text-red-600 mt-1">
+                          This job expired after 28 days.
+                        </p>
+                      )}
                       <div className="flex flex-wrap gap-x-4 text-sm text-gray-500">
                         <span>{job.emirate.replace(/_/g, ' ')}</span>
                         <span>{job.job_type.replace(/_/g, ' ')}</span>
                         <span>{job.views_count} views</span>
                         <span>{job.applications_count} applications</span>
                         <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                        {job.expires_at && (
+                          <span className={new Date(job.expires_at) < new Date() ? 'text-red-500' : ''}>
+                            Expires {new Date(job.expires_at).toLocaleDateString()}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex space-x-2 ml-4">
@@ -173,21 +338,65 @@ export default function EmployerDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {applications.map((app: any) => (
+                    {applications.map((app: any) => {
+                      const deadlinePassed = app.response_deadline && new Date(app.response_deadline) < new Date();
+                      const deadlineSoon = app.response_deadline && !deadlinePassed &&
+                        (new Date(app.response_deadline).getTime() - Date.now()) < 2 * 24 * 60 * 60 * 1000;
+                      return (
                       <div key={app.id} className="card">
+                        {/* Response deadline warning */}
+                        {app.status === 'PENDING' && deadlinePassed && (
+                          <div className="bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3 text-sm text-red-700 flex items-center gap-2">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
+                            </svg>
+                            Response overdue! Respond now to avoid job being paused.
+                          </div>
+                        )}
+                        {app.status === 'PENDING' && deadlineSoon && !deadlinePassed && (
+                          <div className="bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-3 text-sm text-amber-700 flex items-center gap-2">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Response due by {new Date(app.response_deadline).toLocaleDateString()} — respond soon!
+                          </div>
+                        )}
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold">{app.full_name}</h3>
-                            <p className="text-sm text-gray-600">{app.email}</p>
-                            <p className="text-sm text-gray-500">
+                            {/* Contact Info */}
+                            <div className="flex flex-wrap gap-x-4 mt-1">
+                              <a href={`mailto:${app.email}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                {app.email}
+                              </a>
+                              {app.phone && (
+                                <a href={`tel:${app.phone}`} className="text-sm text-green-600 hover:underline flex items-center gap-1">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
+                                  {app.phone}
+                                </a>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">
                               {app.job_title} &middot; {app.total_experience_years} yrs exp &middot; {app.current_emirate?.replace(/_/g, ' ')}
                             </p>
                             {app.cover_letter && (
                               <p className="text-sm text-gray-600 mt-2 italic">"{app.cover_letter}"</p>
                             )}
-                            <p className="text-xs text-gray-400 mt-1">
-                              Applied {new Date(app.applied_at).toLocaleDateString()}
-                            </p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <p className="text-xs text-gray-400">
+                                Applied {new Date(app.applied_at).toLocaleDateString()}
+                              </p>
+                              {app.status === 'PENDING' && app.response_deadline && (
+                                <p className="text-xs text-gray-400">
+                                  Respond by {new Date(app.response_deadline).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <div className="flex flex-col items-end space-y-2 ml-4">
                             <select
@@ -212,7 +421,8 @@ export default function EmployerDashboard() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </>
@@ -341,9 +551,9 @@ export default function EmployerDashboard() {
 
                 <div className="flex gap-3">
                   <Link to="/pricing" className="btn btn-primary">
-                    {subscription.plan_type === 'BASIC' ? 'Upgrade Plan' : 'Change Plan'}
+                    {subscription.plan_type === 'DEMO' ? 'Upgrade Plan' : 'Change Plan'}
                   </Link>
-                  {subscription.plan_type !== 'BASIC' && !subscription.cancel_at_period_end && (
+                  {subscription.plan_type !== 'DEMO' && !subscription.cancel_at_period_end && (
                     <button
                       onClick={() => cancelMutation.mutate()}
                       disabled={cancelMutation.isPending}

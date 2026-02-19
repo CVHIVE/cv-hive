@@ -66,6 +66,29 @@ export default function CompanyProfile() {
                 {company.company_size && <span>{company.company_size} employees</span>}
                 {company.founded_year && <span>Founded {company.founded_year}</span>}
               </div>
+              {/* Response Rate & Reputation Badges */}
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
+                  parseFloat(company.response_rate || 0) >= 70 ? 'bg-green-100 text-green-700' :
+                  parseFloat(company.response_rate || 0) >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-gray-100 text-gray-600'
+                }`}>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  {parseFloat(company.response_rate || 0).toFixed(0)}% response rate
+                </span>
+                <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
+                  parseFloat(company.reputation_score || 0) >= 70 ? 'bg-green-100 text-green-700' :
+                  parseFloat(company.reputation_score || 0) >= 40 ? 'bg-blue-100 text-blue-700' :
+                  'bg-gray-100 text-gray-600'
+                }`}>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                  Reputation: {parseFloat(company.reputation_score || 0).toFixed(0)}/100
+                </span>
+              </div>
               {company.website && (
                 <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline">
                   {company.website}

@@ -4,6 +4,8 @@ import Header from '../components/layout/Header';
 import { useAuthStore } from '../store/authStore';
 import { useCandidateProfile, useUpdateCandidateProfile, useUploadCV, useRemoveCV } from '../hooks/useCandidates';
 import { useCandidateApplications, useSavedJobs } from '../hooks/useJobs';
+import { authService } from '../services/auth';
+import toast from 'react-hot-toast';
 import type { UpdateCandidatePayload, VisaStatus, Emirate, AvailabilityStatus } from '../types';
 
 const VISA_LABELS: Record<VisaStatus, string> = {
@@ -343,6 +345,14 @@ export default function CandidateDashboard() {
                       {app.job_title}
                     </Link>
                     <p className="text-sm text-gray-500">{app.company_name} &middot; {app.emirate?.replace(/_/g, ' ')}</p>
+                    {app.employer_response_rate != null && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Employer response rate: <span className={`font-medium ${
+                          parseFloat(app.employer_response_rate) >= 70 ? 'text-green-600' :
+                          parseFloat(app.employer_response_rate) >= 40 ? 'text-yellow-600' : 'text-gray-500'
+                        }`}>{parseFloat(app.employer_response_rate).toFixed(0)}%</span>
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <span className={`text-xs px-2 py-1 rounded font-medium ${
@@ -390,7 +400,134 @@ export default function CandidateDashboard() {
             </div>
           )}
         </div>
+
+        {/* Profile Visibility Toggle */}
+        <div className="card mt-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold">Profile Visibility</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {p?.profile_visible
+                  ? 'Your profile is visible to employers in search results.'
+                  : 'Your profile is hidden from employer search results. You can still apply to jobs.'}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const newVisible = !p?.profile_visible;
+                updateProfile({
+                  profileVisible: newVisible,
+                  cvVisibility: newVisible ? 'PUBLIC' : 'PRIVATE',
+                } as any);
+              }}
+              disabled={isUpdating}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                p?.profile_visible ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  p?.profile_visible ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            Status: <span className={`font-medium ${p?.profile_visible ? 'text-green-600' : 'text-red-500'}`}>
+              {p?.profile_visible ? 'Visible' : 'Private'}
+            </span>
+          </p>
+        </div>
+
+        {/* Change Password */}
+        <ChangePasswordSection />
       </div>
+    </div>
+  );
+}
+
+function ChangePasswordSection() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      toast.success('Password changed successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card mt-8">
+      <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+      <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+          <div className="relative">
+            <input
+              type={showCurrent ? 'text' : 'password'}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="input pr-16"
+              required
+            />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm">
+              {showCurrent ? 'Hide' : 'Show'}
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+          <div className="relative">
+            <input
+              type={showNew ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="input pr-16"
+              required
+              minLength={8}
+            />
+            <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm">
+              {showNew ? 'Hide' : 'Show'}
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+          <input
+            type={showNew ? 'text' : 'password'}
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            className="input"
+            required
+            minLength={8}
+          />
+        </div>
+        <button type="submit" disabled={loading} className="btn btn-primary">
+          {loading ? 'Changing...' : 'Change Password'}
+        </button>
+      </form>
     </div>
   );
 }

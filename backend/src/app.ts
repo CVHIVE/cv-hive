@@ -26,7 +26,21 @@ app.use('/api/v1/webhooks', webhookRoutes);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    const allowedOrigins = [
+      frontendUrl,
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'http://localhost:5000',
+    ];
+    // Allow requests with no origin (like Stripe webhooks, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin) || /\.ngrok-free\.app$/.test(origin) || /\.ngrok\.io$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins in dev mode
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());

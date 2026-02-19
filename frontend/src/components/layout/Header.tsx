@@ -26,7 +26,6 @@ export default function Header() {
                 <Link to="/post-job" className="text-gray-600 hover:text-gray-900">Post a Job</Link>
                 <Link to="/employer-dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
                 <Link to="/search" className="text-gray-600 hover:text-gray-900">Search Candidates</Link>
-                <Link to="/payment-methods" className="text-gray-600 hover:text-gray-900">Billing</Link>
                 <Link to="/employer-settings" className="text-gray-600 hover:text-gray-900">Settings</Link>
               </>
             )}

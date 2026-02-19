@@ -25,7 +25,7 @@ export type AvailabilityStatus =
   | 'NOT_LOOKING';
 
 export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'FREELANCE' | 'INTERNSHIP';
-export type JobStatus = 'ACTIVE' | 'CLOSED' | 'DRAFT';
+export type JobStatus = 'ACTIVE' | 'CLOSED' | 'DRAFT' | 'PAUSED' | 'EXPIRED';
 
 export type Industry =
   | 'Technology'
@@ -44,7 +44,7 @@ export type Industry =
   | 'Media & Communications'
   | 'Government';
 
-export type SubscriptionPlan = 'BASIC' | 'PROFESSIONAL' | 'ENTERPRISE';
+export type SubscriptionPlan = 'DEMO' | 'PROFESSIONAL' | 'ENTERPRISE';
 export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';
 
 // ── Models ─────────────────────────────────────────────
@@ -91,6 +91,10 @@ export interface Employer {
   email?: string;
   company_name: string;
   industry?: string;
+  response_rate?: number;
+  reputation_score?: number;
+  total_applications_received?: number;
+  total_applications_responded?: number;
   created_at: string;
   updated_at: string;
 }
@@ -117,7 +121,6 @@ export interface RegisterEmployerPayload {
   email: string;
   password: string;
   companyName: string;
-  planType: string;
 }
 
 export interface LoginPayload {

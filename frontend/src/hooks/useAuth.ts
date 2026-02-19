@@ -75,17 +75,13 @@ export function useRegister() {
 }
 
 export function useRegisterEmployer() {
-  const { setAuth } = useAuthStore();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: RegisterEmployerPayload) => authService.registerEmployer(data),
-    onSuccess: (data) => {
-      setAuth(data);
-      queryClient.invalidateQueries({ queryKey: ['me'] });
-      toast.success('Employer account created!');
-      navigate('/employer-dashboard');
+    onSuccess: () => {
+      toast.success('Account created! Please check your email to verify your account.');
+      navigate('/verify-email?pending=true');
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Registration failed');

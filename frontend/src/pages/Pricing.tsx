@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -9,16 +9,18 @@ import toast from 'react-hot-toast';
 
 const plans = [
   {
-    name: 'Basic',
-    key: 'BASIC',
+    name: 'Demo',
+    key: 'DEMO',
     price: 'Free',
-    period: '',
-    description: 'For small businesses getting started',
+    period: '(24 hours)',
+    description: 'Explore the platform before committing',
     features: [
-      'Browse candidate profiles',
-      'Up to 2 contact reveals / month',
-      'Basic search filters',
-      'Email support',
+      'Browse candidate profiles (view only)',
+      'Search with all filters',
+      'View company directory',
+      'No contact reveals',
+      'No job posting',
+      'Expires after 24 hours',
     ],
     cta: 'Get Started',
     highlighted: false,
@@ -30,7 +32,7 @@ const plans = [
     period: '/month',
     description: 'For growing companies hiring regularly',
     features: [
-      'Everything in Basic',
+      'Everything in Demo',
       'Up to 100 contact reveals / month',
       'Advanced search filters',
       'Candidate bookmarking',
@@ -64,6 +66,16 @@ export default function Pricing() {
   const { isAuthenticated, user } = useAuthStore();
   const isEmployer = isAuthenticated && user?.role === 'EMPLOYER';
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const subStatus = searchParams.get('subscription');
+    if (subStatus === 'cancelled') {
+      toast('Payment was cancelled. You can try again anytime.', { icon: '⚠️' });
+      searchParams.delete('subscription');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription-status'],
@@ -80,7 +92,7 @@ export default function Pricing() {
       toast.error('Subscriptions are for employer accounts');
       return;
     }
-    if (planKey === 'BASIC') return;
+    if (planKey === 'DEMO') return;
 
     setLoadingPlan(planKey);
     try {
@@ -95,7 +107,7 @@ export default function Pricing() {
     }
   };
 
-  const currentPlan = subscription?.plan_type || 'BASIC';
+  const currentPlan = subscription?.plan_type || 'DEMO';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -159,7 +171,7 @@ export default function Pricing() {
                     <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-600 cursor-not-allowed">
                       Current Plan
                     </button>
-                  ) : isEmployer && plan.key !== 'BASIC' ? (
+                  ) : isEmployer && plan.key !== 'DEMO' ? (
                     <button
                       onClick={() => handleSubscribe(plan.key)}
                       disabled={loadingPlan === plan.key}
@@ -172,7 +184,7 @@ export default function Pricing() {
                       {loadingPlan === plan.key ? 'Redirecting...' : plan.cta}
                     </button>
                   ) : (
-                    <Link to={`/register-employer?plan=${plan.key}`}>
+                    <Link to={plan.key !== 'DEMO' ? `/register-employer?plan=${plan.key}` : '/register-employer'}>
                       <button
                         className={`w-full py-3 rounded-lg font-semibold transition ${
                           plan.highlighted
@@ -180,7 +192,7 @@ export default function Pricing() {
                             : 'btn btn-primary'
                         }`}
                       >
-                        {plan.key === 'BASIC' ? 'Get Started' : plan.cta}
+                        {plan.key !== 'DEMO' ? 'Sign Up' : 'Get Started'}
                       </button>
                     </Link>
                   )}

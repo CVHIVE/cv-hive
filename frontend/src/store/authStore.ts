@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuth: ({ user, accessToken, refreshToken }) => {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    set({ user, isAuthenticated: true });
+    set({ user: { ...user, email_verified: user.email_verified ?? true }, isAuthenticated: true });
   },
 
   setUser: (me) => {

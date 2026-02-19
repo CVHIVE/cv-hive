@@ -11,12 +11,17 @@ const router = Router();
 router.get('/recent', jobController.getRecentJobs);
 router.get('/search', jobController.searchJobs);
 router.get('/:id/similar', jobController.getSimilarJobsHandler);
+router.get('/:id/employer-metrics', jobController.getEmployerResponseMetrics);
 router.get('/:id', jobController.getJob);
+
+// Admin/Cron route for auto-pause and auto-expire
+router.post('/admin/auto-pause', authenticate, authorize('ADMIN'), jobController.runAutoPause);
 
 // Employer routes
 router.post('/', authenticate, authorize('EMPLOYER'), validateRequest(createJobSchema), jobController.createJob);
 router.put('/:id', authenticate, authorize('EMPLOYER'), validateRequest(updateJobSchema), jobController.updateJob);
 router.post('/:id/pay', authenticate, authorize('EMPLOYER'), jobController.payForJob);
+router.post('/verify-payment', authenticate, authorize('EMPLOYER'), jobController.verifyJobPayment);
 router.put('/:id/close', authenticate, authorize('EMPLOYER'), jobController.closeJob);
 router.get('/employer/mine', authenticate, authorize('EMPLOYER'), jobController.getEmployerJobs);
 router.get('/:id/applications', authenticate, authorize('EMPLOYER'), jobController.getApplicationsForJob);

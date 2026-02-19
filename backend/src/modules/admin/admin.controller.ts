@@ -1,5 +1,15 @@
 import { Request, Response } from 'express';
 import * as adminService from './admin.service';
+import { cleanupDemoAccounts } from '../../../scripts/cleanup-demo-accounts';
+
+export const cleanupDemos = async (req: Request, res: Response) => {
+  try {
+    const result = await cleanupDemoAccounts();
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {

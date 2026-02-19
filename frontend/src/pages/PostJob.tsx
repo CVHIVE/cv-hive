@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
-import { useCreateJob, usePayForJob } from '../hooks/useJobs';
-import { paymentService } from '../services/payments';
+import { useCreateJob } from '../hooks/useJobs';
+import { jobService } from '../services/jobs';
+import toast from 'react-hot-toast';
 import type { CreateJobPayload, Emirate, JobType } from '../types';
 
 const INDUSTRY_OPTIONS = [
@@ -34,13 +34,8 @@ const EMIRATE_OPTIONS: { value: Emirate; label: string }[] = [
 export default function PostJob() {
   const navigate = useNavigate();
   const { mutate: createJob, isPending } = useCreateJob();
-  const { mutate: payForJob, isPending: isPaying } = usePayForJob();
   const [createdJobId, setCreatedJobId] = useState<string | null>(null);
-  const { data: cards } = useQuery({
-    queryKey: ['payment-methods'],
-    queryFn: () => paymentService.getAll(),
-  });
-  const defaultCard = cards?.find((c: any) => c.is_default);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [form, setForm] = useState<CreateJobPayload>({
     title: '',
     description: '',
@@ -58,11 +53,21 @@ export default function PostJob() {
     });
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!createdJobId) return;
-    payForJob(createdJobId, {
-      onSuccess: () => navigate('/employer-dashboard'),
-    });
+    setIsRedirecting(true);
+    try {
+      const result = await jobService.payForJob(createdJobId);
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error('Failed to create checkout session');
+        setIsRedirecting(false);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Payment failed');
+      setIsRedirecting(false);
+    }
   };
 
   const set = (field: string, value: any) => setForm({ ...form, [field]: value });
@@ -104,36 +109,24 @@ export default function PostJob() {
                   Appears in search results and similar jobs
                 </li>
               </ul>
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  You must respond to applicants within 7 days or the listing will be auto-paused.
+                </p>
+              </div>
             </div>
 
-            {defaultCard ? (
-              <>
-                <div className="bg-white border rounded-lg p-3 mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-7 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                      {defaultCard.card_brand.slice(0, 4).toUpperCase()}
-                    </div>
-                    <span className="text-sm">
-                      {defaultCard.card_brand} ending in {defaultCard.card_last4}
-                    </span>
-                  </div>
-                  <Link to="/payment-methods" className="text-xs text-blue-600 hover:underline">
-                    Change
-                  </Link>
-                </div>
-                <button
-                  onClick={handlePay}
-                  disabled={isPaying}
-                  className="btn btn-primary w-full text-lg py-3 mb-3"
-                >
-                  {isPaying ? 'Processing Payment...' : 'Pay AED 100 & Publish'}
-                </button>
-              </>
-            ) : (
-              <Link to="/payment-methods" className="btn btn-primary w-full text-lg py-3 mb-3 block text-center">
-                Add a Card to Pay
-              </Link>
-            )}
+            <button
+              onClick={handlePay}
+              disabled={isRedirecting}
+              className="btn btn-primary w-full text-lg py-3 mb-3"
+            >
+              {isRedirecting ? 'Redirecting to payment...' : 'Pay AED 100 & Publish'}
+            </button>
+            <p className="text-xs text-gray-400 mb-3">Secure payment powered by Stripe</p>
             <button
               onClick={() => navigate('/employer-dashboard')}
               className="text-sm text-gray-500 hover:text-gray-700"
@@ -152,7 +145,24 @@ export default function PostJob() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-2">Post a Job</h1>
-        <p className="text-gray-600 mb-8">AED 100 per job posting &middot; Active for 28 days</p>
+        <p className="text-gray-600 mb-4">AED 100 per job posting &middot; Active for 28 days</p>
+
+        {/* Expiration & Response Notice */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <h3 className="font-semibold text-amber-800 mb-1">Important: Job Posting Rules</h3>
+              <ul className="text-sm text-amber-700 space-y-1">
+                <li>&#8226; Your job listing will <strong>expire after 28 days</strong> from the date of publication.</li>
+                <li>&#8226; You must <strong>respond to applicants within 7 days</strong> of their application or the job will be automatically paused.</li>
+                <li>&#8226; Your response rate and reputation score are visible to candidates and affect your company's credibility.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="card">
           <div className="space-y-6">

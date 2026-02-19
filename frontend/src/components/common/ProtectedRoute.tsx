@@ -21,5 +21,10 @@ export default function ProtectedRoute({ children, roles }: Props) {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
+  // Enforce email verification for all non-admin users
+  if (user && user.role !== 'ADMIN' && !user.email_verified) {
+    return <Navigate to="/verify-email?pending=true" replace />;
+  }
+
   return <>{children}</>;
 }

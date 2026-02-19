@@ -155,6 +155,7 @@ export function useUpdateApplicationStatus() {
       jobService.updateApplicationStatus(applicationId, status, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['employer-profile'] });
       toast.success('Application status updated');
     },
     onError: (err: any) => {

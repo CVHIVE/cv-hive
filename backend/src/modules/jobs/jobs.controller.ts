@@ -154,8 +154,21 @@ export const getApplicationStatusHistory = async (req: Request, res: Response) =
 export const payForJob = async (req: Request, res: Response) => {
   try {
     const employer = await getEmployerId(req);
-    const job = await jobService.payForJob(req.params.id, employer);
-    res.json({ success: true, message: 'Payment successful. Job is now active.', data: job });
+    const result = await jobService.payForJob(req.params.id, employer);
+    res.json({ success: true, message: 'Checkout session created', data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const verifyJobPayment = async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) {
+      return res.status(400).json({ success: false, message: 'Session ID required' });
+    }
+    const result = await jobService.verifyJobPaymentSession(sessionId);
+    res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -167,6 +180,25 @@ export const getSimilarJobsHandler = async (req: Request, res: Response) => {
     res.json({ success: true, data: jobs });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getEmployerResponseMetrics = async (req: Request, res: Response) => {
+  try {
+    const metrics = await jobService.getEmployerResponseMetricsByJobId(req.params.id);
+    res.json({ success: true, data: metrics });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const runAutoPause = async (req: Request, res: Response) => {
+  try {
+    const paused = await jobService.autoPauseUnresponsiveJobs();
+    const expired = await jobService.autoExpireJobs();
+    res.json({ success: true, data: { paused, expired } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

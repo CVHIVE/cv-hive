@@ -5,11 +5,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder'
 });
 
 export const STRIPE_PLANS = {
-  BASIC: {
-    name: 'Basic',
+  DEMO: {
+    name: 'Demo',
     priceId: null, // Free plan
     priceAED: 0,
-    contactRevealsLimit: 2,
+    contactRevealsLimit: 0,
   },
   PROFESSIONAL: {
     name: 'Professional',

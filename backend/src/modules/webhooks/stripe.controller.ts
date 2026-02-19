@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import stripe from '../../config/stripe';
 import * as subService from '../subscriptions/subscriptions.service';
+import { activateJobAfterPayment } from '../jobs/jobs.service';
 
 export const handleStripeWebhook = async (req: Request, res: Response) => {
   const sig = req.headers['stripe-signature'];
@@ -8,11 +9,11 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
   let event;
   try {
-    if (webhookSecret && sig) {
+    if (webhookSecret && webhookSecret !== 'whsec_xxxxxxxxxxxxx' && sig) {
       event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     } else {
       // Dev mode: trust the event payload
-      event = req.body;
+      event = JSON.parse(req.body.toString());
     }
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
@@ -21,9 +22,18 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
-        await subService.handleCheckoutComplete(event.data.object);
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        if (session.metadata?.type === 'job_posting') {
+          // Job posting payment
+          console.log('\u2705 Job payment received for job:', session.metadata.job_id);
+          await activateJobAfterPayment(session.metadata.job_id);
+        } else {
+          // Subscription payment
+          await subService.handleCheckoutComplete(session);
+        }
         break;
+      }
       case 'customer.subscription.updated':
         await subService.handleSubscriptionUpdated(event.data.object);
         break;

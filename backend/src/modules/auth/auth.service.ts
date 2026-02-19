@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import slugify from 'slugify';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/email.service';
+import { isBusinessEmail } from './auth.validation';
 
 interface RegisterData {
   email: string;
@@ -16,7 +17,6 @@ interface RegisterEmployerData {
   email: string;
   password: string;
   companyName: string;
-  planType?: string;
 }
 
 export const register = async (data: RegisterData) => {
@@ -38,9 +38,9 @@ export const register = async (data: RegisterData) => {
     [userId, email, passwordHash, role, verificationToken]
   );
 
-  sendVerificationEmail(email, verificationToken, userId).catch((err) =>
-    console.error('Failed to send verification email:', err.message)
-  );
+  sendVerificationEmail(email, verificationToken, userId)
+    .then(() => console.log('📧 Verification email sent to:', email))
+    .catch((err) => console.error('❌ Failed to send verification email to', email, ':', err.message));
 
   const name = fullName || 'New Candidate';
   const candidateSlug = slugify(name, { lower: true, strict: true }) + '-' + Date.now().toString(36);
@@ -57,7 +57,7 @@ export const register = async (data: RegisterData) => {
 };
 
 export const registerEmployer = async (data: RegisterEmployerData) => {
-  const { email, password, companyName, planType } = data;
+  const { email, password, companyName } = data;
 
   const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
   if (existing.rows.length > 0) {
@@ -75,9 +75,9 @@ export const registerEmployer = async (data: RegisterEmployerData) => {
     [userId, email, passwordHash, role, verificationToken]
   );
 
-  sendVerificationEmail(email, verificationToken, userId).catch((err) =>
-    console.error('Failed to send verification email:', err.message)
-  );
+  sendVerificationEmail(email, verificationToken, userId)
+    .then(() => console.log('📧 Verification email sent to:', email))
+    .catch((err) => console.error('❌ Failed to send verification email to', email, ':', err.message));
 
   const employerId = uuidv4();
   const companySlug = slugify(companyName, { lower: true, strict: true }) + '-' + Date.now().toString(36);
@@ -86,13 +86,11 @@ export const registerEmployer = async (data: RegisterEmployerData) => {
     [employerId, userId, companyName, companySlug]
   );
 
-  // Create subscription with chosen plan
-  const plan = planType || 'BASIC';
-  const limits: Record<string, number> = { BASIC: 2, PROFESSIONAL: 100, ENTERPRISE: -1 };
+  // Always start with DEMO (free) plan — paid plans require Stripe checkout
   await db.query(
     `INSERT INTO subscriptions (id, employer_id, plan_type, status, contact_reveals_limit, contact_reveals_used, current_period_start, current_period_end)
-     VALUES ($1, $2, $3, 'ACTIVE', $4, 0, NOW(), NOW() + INTERVAL '30 days')`,
-    [uuidv4(), employerId, plan, limits[plan] || 2]
+     VALUES ($1, $2, 'DEMO', 'ACTIVE', 0, 0, NOW(), NOW() + INTERVAL '24 hours')`,
+    [uuidv4(), employerId]
   );
 
   const accessToken = generateAccessToken({ id: userId, email, role });
@@ -115,10 +113,15 @@ export const login = async (email: string, password: string) => {
     throw new Error('Invalid email or password');
   }
 
+  // Block unverified users from logging in
+  if (!user.email_verified) {
+    throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
+  }
+
   const accessToken = generateAccessToken({ id: user.id, email: user.email, role: user.role });
   const refreshToken = generateRefreshToken({ id: user.id });
 
-  return { user: { id: user.id, email: user.email, role: user.role }, accessToken, refreshToken };
+  return { user: { id: user.id, email: user.email, role: user.role, email_verified: user.email_verified }, accessToken, refreshToken };
 };
 
 export const getMe = async (userId: string) => {
@@ -146,11 +149,16 @@ export const getMe = async (userId: string) => {
 
 export const verifyEmail = async (token: string) => {
   const result = await db.query(
-    'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING id, email',
+    'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING id, email, role',
     [token]
   );
   if (result.rows.length === 0) throw new Error('Invalid or expired verification token');
-  return result.rows[0];
+
+  const user = result.rows[0];
+  // Return tokens so user can be auto-logged-in after verification
+  const accessToken = generateAccessToken({ id: user.id, email: user.email, role: user.role });
+  const refreshToken = generateRefreshToken({ id: user.id });
+  return { id: user.id, email: user.email, role: user.role, accessToken, refreshToken };
 };
 
 export const resendVerification = async (userId: string) => {
@@ -162,6 +170,22 @@ export const resendVerification = async (userId: string) => {
   await db.query('UPDATE users SET verification_token = $1 WHERE id = $2', [token, userId]);
   await sendVerificationEmail(user.rows[0].email, token, userId);
   return { message: 'Verification email sent' };
+};
+
+export const resendVerificationByEmail = async (email: string) => {
+  const user = await db.query('SELECT id, email, email_verified FROM users WHERE email = $1', [email]);
+  if (user.rows.length === 0) {
+    // Don't reveal whether the email exists
+    return { message: 'If an account with that email exists, a verification email has been sent.' };
+  }
+  if (user.rows[0].email_verified) {
+    return { message: 'If an account with that email exists, a verification email has been sent.' };
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  await db.query('UPDATE users SET verification_token = $1 WHERE id = $2', [token, user.rows[0].id]);
+  await sendVerificationEmail(user.rows[0].email, token, user.rows[0].id);
+  return { message: 'If an account with that email exists, a verification email has been sent.' };
 };
 
 export const requestPasswordReset = async (email: string) => {
@@ -197,4 +221,16 @@ export const resetPassword = async (token: string, newPassword: string) => {
     [passwordHash, result.rows[0].id]
   );
   return { message: 'Password reset successfully' };
+};
+
+export const changePassword = async (userId: string, currentPassword: string, newPassword: string) => {
+  const result = await db.query('SELECT password_hash FROM users WHERE id = $1', [userId]);
+  if (result.rows.length === 0) throw new Error('User not found');
+
+  const isValid = await comparePassword(currentPassword, result.rows[0].password_hash);
+  if (!isValid) throw new Error('Current password is incorrect');
+
+  const passwordHash = await hashPassword(newPassword);
+  await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, userId]);
+  return { message: 'Password changed successfully' };
 };

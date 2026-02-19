@@ -12,5 +12,6 @@ router.put('/users/:id/reset-password', authenticate, authorize('ADMIN'), adminC
 router.get('/candidates', authenticate, authorize('ADMIN'), adminController.getAllCandidates);
 router.get('/employers', authenticate, authorize('ADMIN'), adminController.getAllEmployers);
 router.get('/jobs', authenticate, authorize('ADMIN'), adminController.getAllJobs);
+router.post('/cleanup-demos', authenticate, authorize('ADMIN'), adminController.cleanupDemos);
 
 export default router;

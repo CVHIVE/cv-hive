@@ -176,6 +176,49 @@ export default function JobDetail() {
                 )}
               </div>
 
+              {/* Employer Response Rate */}
+              <div className="border-t mt-4 pt-4">
+                <h3 className="font-semibold mb-3">Employer Responsiveness</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-500">Response Rate</span>
+                      <span className={`font-medium ${
+                        parseFloat(job.response_rate || 0) >= 70 ? 'text-green-600' :
+                        parseFloat(job.response_rate || 0) >= 40 ? 'text-yellow-600' : 'text-gray-500'
+                      }`}>
+                        {parseFloat(job.response_rate || 0).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          parseFloat(job.response_rate || 0) >= 70 ? 'bg-green-500' :
+                          parseFloat(job.response_rate || 0) >= 40 ? 'bg-yellow-500' : 'bg-gray-400'
+                        }`}
+                        style={{ width: `${Math.min(100, parseFloat(job.response_rate || 0))}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Reputation</span>
+                      <span className={`font-medium ${
+                        parseFloat(job.reputation_score || 0) >= 70 ? 'text-green-600' :
+                        parseFloat(job.reputation_score || 0) >= 40 ? 'text-blue-600' : 'text-gray-500'
+                      }`}>
+                        {parseFloat(job.reputation_score || 0).toFixed(1)}/100
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {parseFloat(job.reputation_score || 0) >= 70 ? 'Highly responsive employer' :
+                       parseFloat(job.reputation_score || 0) >= 40 ? 'Good track record' :
+                       parseFloat(job.reputation_score || 0) > 0 ? 'Building reputation' : 'New employer'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="border-t mt-4 pt-4">
                 <h3 className="font-semibold mb-3">Job Stats</h3>
                 <div className="text-sm space-y-2 text-gray-600">

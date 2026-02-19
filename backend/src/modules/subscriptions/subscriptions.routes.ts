@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/checkout', authenticate, authorize('EMPLOYER'), subController.createCheckout);
 router.get('/status', authenticate, authorize('EMPLOYER'), subController.getStatus);
+router.post('/verify-session', authenticate, authorize('EMPLOYER'), subController.verifySession);
 router.post('/cancel', authenticate, authorize('EMPLOYER'), subController.cancelSubscription);
 
 export default router;
