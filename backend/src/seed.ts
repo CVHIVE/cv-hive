@@ -419,6 +419,8 @@ async function seed() {
     const eid = uuidv4();
     const slug = slugify(c.name, { lower: true, strict: true });
     const email = slug.replace(/-/g, '.') + '@company.placeholder';
+    const domain = new URL(c.website).hostname.replace(/^www\./, '');
+    const logoUrl = `https://logo.clearbit.com/${domain}`;
 
     await db.query(
       `INSERT INTO users (id, email, password_hash, role, email_verified) VALUES ($1, $2, $3, 'EMPLOYER', TRUE)
@@ -426,10 +428,10 @@ async function seed() {
       [uid, email, password]
     );
     await db.query(
-      `INSERT INTO employers (id, user_id, company_name, industry, company_slug, description, website, company_size, founded_year, location)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO employers (id, user_id, company_name, industry, company_slug, description, website, company_size, founded_year, location, company_logo_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT (user_id) DO NOTHING`,
-      [eid, uid, c.name, c.industry, slug, c.desc, c.website, c.size, c.year, c.location]
+      [eid, uid, c.name, c.industry, slug, c.desc, c.website, c.size, c.year, c.location, logoUrl]
     );
   }
 

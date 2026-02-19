@@ -9,10 +9,14 @@ import toast from 'react-hot-toast';
 import type { CreateJobPayload, Emirate, JobType } from '../types';
 
 const INDUSTRY_OPTIONS = [
-  'Technology', 'Finance & Banking', 'Healthcare', 'Construction & Engineering',
-  'Hospitality & Tourism', 'Education', 'Marketing & Advertising', 'Real Estate',
-  'Oil & Gas', 'Retail', 'Legal', 'HR & Recruitment', 'Logistics & Supply Chain',
-  'Media & Communications', 'Government',
+  'Accountancy', 'Admin & Office Support', 'Automotive', 'Aviation & Aerospace',
+  'Cleaning & Facilities', 'Consulting', 'Construction & Engineering', 'Customer Service',
+  'Design & Creative', 'Education', 'Engineering', 'Environmental', 'Finance & Banking',
+  'Government', 'Healthcare', 'Hospitality & Tourism', 'HR & Recruitment', 'Insurance',
+  'Legal', 'Logistics & Supply Chain', 'Manufacturing', 'Marketing & Advertising',
+  'Media & Communications', 'Oil & Gas', 'Procurement & Purchasing', 'Real Estate',
+  'Retail', 'Sales & Business Development', 'Science & Research', 'Security & Safety',
+  'Telecoms', 'Technology',
 ];
 
 const JOB_TYPE_OPTIONS: { value: JobType; label: string }[] = [

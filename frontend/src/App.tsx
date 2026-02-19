@@ -25,6 +25,7 @@ const CompanyProfile = lazy(() => import('./pages/CompanyProfile'));
 const EmployerSettings = lazy(() => import('./pages/EmployerSettings'));
 const RegisterEmployer = lazy(() => import('./pages/RegisterEmployer'));
 const CompanyDirectory = lazy(() => import('./pages/CompanyDirectory'));
+const CandidateDatabase = lazy(() => import('./pages/CandidateDatabase'));
 const CVBuilder = lazy(() => import('./pages/CVBuilder'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
@@ -64,6 +65,7 @@ function AppRoutes() {
       <Route path="/companies/:slug" element={<CompanyProfile />} />
       <Route path="/register-employer" element={<RegisterEmployer />} />
       <Route path="/companies" element={<CompanyDirectory />} />
+      <Route path="/cv-database" element={<CandidateDatabase />} />
       <Route path="/cv-builder" element={<CVBuilder />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />

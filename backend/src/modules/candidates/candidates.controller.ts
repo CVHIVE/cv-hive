@@ -222,3 +222,15 @@ export const exportCandidates = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const getDatabaseStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await candidateService.getDatabaseStats({
+      industry: req.query.industry as string | undefined,
+      emirate: req.query.emirate as string | undefined,
+    });
+    res.status(200).json({ success: true, data: stats });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

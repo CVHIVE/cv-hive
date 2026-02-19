@@ -1,6 +1,38 @@
 import db from '../../config/database';
 import { v4 as uuidv4 } from 'uuid';
 
+// ── Public stats for candidate database landing page ───
+export const getDatabaseStats = async (filters?: { industry?: string; emirate?: string }) => {
+  const conditions: string[] = ['profile_visible = true'];
+  const values: any[] = [];
+  let idx = 1;
+
+  if (filters?.industry) { conditions.push(`industry = $${idx}`); values.push(filters.industry); idx++; }
+  if (filters?.emirate) { conditions.push(`current_emirate = $${idx}`); values.push(filters.emirate); idx++; }
+
+  const where = conditions.join(' AND ');
+
+  const [totalRes, byIndustryRes, byEmirateRes, recentRes] = await Promise.all([
+    db.query(`SELECT COUNT(*) FROM candidates WHERE ${where}`, values),
+    db.query(
+      `SELECT industry, COUNT(*) as count FROM candidates WHERE profile_visible = true AND industry IS NOT NULL GROUP BY industry ORDER BY count DESC`
+    ),
+    db.query(
+      `SELECT current_emirate, COUNT(*) as count FROM candidates WHERE profile_visible = true GROUP BY current_emirate ORDER BY count DESC`
+    ),
+    db.query(
+      `SELECT COUNT(*) FROM candidates WHERE ${where} AND updated_at >= NOW() - INTERVAL '2 months'`, values
+    ),
+  ]);
+
+  return {
+    total: parseInt(totalRes.rows[0].count),
+    recentlyUpdated: parseInt(recentRes.rows[0].count),
+    byIndustry: byIndustryRes.rows.map((r: any) => ({ industry: r.industry, count: parseInt(r.count) })),
+    byEmirate: byEmirateRes.rows.map((r: any) => ({ emirate: r.current_emirate, count: parseInt(r.count) })),
+  };
+};
+
 export const getProfile = async (userId: string) => {
   const result = await db.query(
     `SELECT c.*, u.email FROM candidates c JOIN users u ON c.user_id = u.id WHERE c.user_id = $1`,

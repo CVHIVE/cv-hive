@@ -88,9 +88,10 @@ export default function CompanyDirectory() {
                   >
                     {company.company_logo_url ? (
                       <img
-                        src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${company.company_logo_url}`}
+                        src={company.company_logo_url.startsWith('http') ? company.company_logo_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${company.company_logo_url}`}
                         alt={company.company_name}
-                        className="w-12 h-12 rounded object-cover flex-shrink-0"
+                        className="w-12 h-12 rounded object-contain flex-shrink-0 bg-white"
+                        onError={(e) => { const el = e.target as HTMLImageElement; el.onerror = null; el.src = ''; el.style.display = 'none'; }}
                       />
                     ) : (
                       <div className="w-12 h-12 bg-primary-100 rounded flex items-center justify-center flex-shrink-0 text-primary font-bold text-lg">

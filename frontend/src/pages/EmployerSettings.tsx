@@ -103,7 +103,7 @@ export default function EmployerSettings() {
           <h3 className="font-semibold mb-4">Company Logo</h3>
           <div className="flex items-center gap-4">
             {profile?.company_logo_url ? (
-              <img src={`${API_BASE}${profile.company_logo_url}`} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
+              <img src={profile.company_logo_url.startsWith('http') ? profile.company_logo_url : `${API_BASE}${profile.company_logo_url}`} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
             ) : (
               <div className="w-20 h-20 rounded-lg bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary">
                 {profile?.company_name?.charAt(0) || 'C'}

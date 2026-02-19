@@ -42,6 +42,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-5 text-white">For Employers</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
               <li><Link to="/search" className="hover:text-white transition-colors">Search Candidates</Link></li>
+              <li><Link to="/cv-database" className="hover:text-white transition-colors">CV Database</Link></li>
               <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               <li><Link to="/post-job" className="hover:text-white transition-colors">Post a Job</Link></li>
               <li><Link to="/register-employer" className="hover:text-white transition-colors">Create Account</Link></li>

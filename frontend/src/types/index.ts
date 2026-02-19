@@ -28,21 +28,38 @@ export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'FREELANCE' | 'IN
 export type JobStatus = 'ACTIVE' | 'CLOSED' | 'DRAFT' | 'PAUSED' | 'EXPIRED';
 
 export type Industry =
-  | 'Technology'
-  | 'Finance & Banking'
-  | 'Healthcare'
+  | 'Accountancy'
+  | 'Admin & Office Support'
+  | 'Automotive'
+  | 'Aviation & Aerospace'
+  | 'Cleaning & Facilities'
+  | 'Consulting'
   | 'Construction & Engineering'
-  | 'Hospitality & Tourism'
+  | 'Customer Service'
+  | 'Design & Creative'
   | 'Education'
-  | 'Marketing & Advertising'
-  | 'Real Estate'
-  | 'Oil & Gas'
-  | 'Retail'
-  | 'Legal'
+  | 'Engineering'
+  | 'Environmental'
+  | 'Finance & Banking'
+  | 'Government'
+  | 'Healthcare'
+  | 'Hospitality & Tourism'
   | 'HR & Recruitment'
+  | 'Insurance'
+  | 'Legal'
   | 'Logistics & Supply Chain'
+  | 'Manufacturing'
+  | 'Marketing & Advertising'
   | 'Media & Communications'
-  | 'Government';
+  | 'Oil & Gas'
+  | 'Procurement & Purchasing'
+  | 'Real Estate'
+  | 'Retail'
+  | 'Sales & Business Development'
+  | 'Science & Research'
+  | 'Security & Safety'
+  | 'Telecoms'
+  | 'Technology';
 
 export type SubscriptionPlan = 'DEMO' | 'PROFESSIONAL' | 'ENTERPRISE';
 export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';

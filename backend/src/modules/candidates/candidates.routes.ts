@@ -8,6 +8,9 @@ import { uploadCV } from '../../middleware/upload';
 
 const router = Router();
 
+// Public endpoint for database stats (landing page)
+router.get('/db-stats', candidateController.getDatabaseStats);
+
 router.get('/profile', authenticate, authorize('CANDIDATE'), candidateController.getProfile);
 router.put('/profile', authenticate, authorize('CANDIDATE'), validateRequest(updateProfileSchema), candidateController.updateProfile);
 router.post('/cv/upload', authenticate, authorize('CANDIDATE'), uploadCV.single('cv'), candidateController.uploadCV);

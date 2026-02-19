@@ -54,7 +54,7 @@ export default function CompanyProfile() {
           <div className="flex items-start gap-6">
             {company.company_logo_url ? (
               <img
-                src={`${API_BASE}${company.company_logo_url}`}
+                src={company.company_logo_url.startsWith('http') ? company.company_logo_url : `${API_BASE}${company.company_logo_url}`}
                 alt={company.company_name}
                 className="w-20 h-20 rounded-lg object-cover"
               />
