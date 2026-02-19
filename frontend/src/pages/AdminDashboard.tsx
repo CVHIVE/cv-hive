@@ -313,7 +313,7 @@ export default function AdminDashboard() {
                         </select>
                       </td>
                       <td className="py-2 pr-4 text-gray-500">
-                        {emp.contact_reveals_used || 0}/{emp.contact_reveals_limit === -1 ? '∞' : (emp.contact_reveals_limit || 0)}
+                        {emp.contact_reveals_used || 0}/{emp.contact_reveals_limit || 0}
                       </td>
                       <td className="py-2 pr-4 text-gray-500">{new Date(emp.registered_at).toLocaleDateString()}</td>
                       <td className="py-2">

@@ -179,6 +179,7 @@ export const hasMinPlan = async (employerId: string, minPlan: 'PROFESSIONAL' | '
 
 export const checkContactRevealLimit = async (employerId: string) => {
   const sub = await getSubscriptionStatus(employerId);
+  if (sub.contact_reveals_limit <= 0) return false;
   return sub.contact_reveals_used < sub.contact_reveals_limit;
 };
 

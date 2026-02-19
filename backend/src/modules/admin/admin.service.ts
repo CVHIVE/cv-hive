@@ -133,7 +133,7 @@ export const updateEmployerSubscription = async (employerId: string, planType: s
   const validPlans = ['DEMO', 'PROFESSIONAL', 'ENTERPRISE'];
   if (!validPlans.includes(planType)) throw new Error('Invalid plan type');
 
-  const limits: Record<string, number> = { DEMO: 0, PROFESSIONAL: 100, ENTERPRISE: -1 };
+  const limits: Record<string, number> = { DEMO: 0, PROFESSIONAL: 100, ENTERPRISE: 500 };
 
   const existing = await db.query('SELECT id FROM subscriptions WHERE employer_id = $1', [employerId]);
   if (existing.rows.length === 0) {

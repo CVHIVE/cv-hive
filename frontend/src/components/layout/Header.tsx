@@ -9,7 +9,10 @@ export default function Header() {
   const logout = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [jobsDropdownOpen, setJobsDropdownOpen] = useState(false);
+  const [mobileJobsOpen, setMobileJobsOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const jobsDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   // Close user menu on route change or outside click
@@ -22,6 +25,9 @@ export default function Header() {
     const handleClick = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (jobsDropdownRef.current && !jobsDropdownRef.current.contains(e.target as Node)) {
+        setJobsDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -56,7 +62,24 @@ export default function Header() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className={desktopLinkClass('/')}>Home</Link>
-            <Link to="/jobs" className={desktopLinkClass('/jobs')}>Find Jobs</Link>
+            <div className="relative" ref={jobsDropdownRef}
+              onMouseEnter={() => setJobsDropdownOpen(true)}
+              onMouseLeave={() => setJobsDropdownOpen(false)}
+            >
+              <Link to="/jobs" className={`${desktopLinkClass('/jobs')} flex items-center gap-1`}>
+                Find Jobs
+                <svg className={`w-3.5 h-3.5 transition-transform ${jobsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+              {jobsDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                  <Link to="/jobs" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">All Jobs</Link>
+                  <Link to="/jobs/emirate" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Search by Emirate</Link>
+                  <Link to="/jobs/industry" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Search by Industry</Link>
+                </div>
+              )}
+            </div>
             {(!isAuthenticated || user?.role !== 'EMPLOYER') && (
               <Link to="/cv-builder" className={desktopLinkClass('/cv-builder')}>CV Builder</Link>
             )}
@@ -165,7 +188,26 @@ export default function Header() {
         <div className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-lg">
           <div className="px-4 py-3 space-y-1">
             <Link to="/" className={navLinkClass('/')} onClick={closeMobile}>Home</Link>
-            <Link to="/jobs" className={navLinkClass('/jobs')} onClick={closeMobile}>Find Jobs</Link>
+            <button
+              onClick={() => setMobileJobsOpen(!mobileJobsOpen)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-base font-medium transition-all ${
+                location.pathname.startsWith('/jobs')
+                  ? 'text-primary bg-primary-50 font-semibold'
+                  : 'text-gray-600 hover:text-primary hover:bg-gray-50'
+              }`}
+            >
+              Find Jobs
+              <svg className={`w-4 h-4 transition-transform ${mobileJobsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {mobileJobsOpen && (
+              <div className="pl-4 space-y-1">
+                <Link to="/jobs" className={navLinkClass('/jobs')} onClick={closeMobile}>All Jobs</Link>
+                <Link to="/jobs/emirate" className={navLinkClass('/jobs/emirate')} onClick={closeMobile}>Search by Emirate</Link>
+                <Link to="/jobs/industry" className={navLinkClass('/jobs/industry')} onClick={closeMobile}>Search by Industry</Link>
+              </div>
+            )}
             {(!isAuthenticated || user?.role !== 'EMPLOYER') && (
               <Link to="/cv-builder" className={navLinkClass('/cv-builder')} onClick={closeMobile}>CV Builder</Link>
             )}

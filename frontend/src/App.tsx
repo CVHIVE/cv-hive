@@ -35,6 +35,14 @@ const SalaryGuide = lazy(() => import('./pages/SalaryGuide'));
 const CareerAdvice = lazy(() => import('./pages/CareerAdvice'));
 const MyApplications = lazy(() => import('./pages/MyApplications'));
 const SavedJobs = lazy(() => import('./pages/SavedJobs'));
+const GratuityCalculator = lazy(() => import('./pages/GratuityCalculator'));
+const Help = lazy(() => import('./pages/Help'));
+const IndustryJobs = lazy(() => import('./pages/IndustryJobs'));
+const IndustryJobsList = lazy(() => import('./pages/IndustryJobs').then(m => ({ default: m.IndustryJobsList })));
+const EmirateJobs = lazy(() => import('./pages/EmirateJobs'));
+const EmirateJobsList = lazy(() => import('./pages/EmirateJobs').then(m => ({ default: m.EmirateJobsList })));
+const Sitemap = lazy(() => import('./pages/Sitemap'));
+const Cookies = lazy(() => import('./pages/Cookies'));
 
 const BookmarkedCandidates = lazy(() => import('./pages/BookmarkedCandidates'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -76,6 +84,14 @@ function AppRoutes() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/salary-guide" element={<SalaryGuide />} />
       <Route path="/career-advice" element={<CareerAdvice />} />
+      <Route path="/gratuity-calculator" element={<GratuityCalculator />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/jobs/industry" element={<IndustryJobsList />} />
+      <Route path="/jobs/industry/:slug" element={<IndustryJobs />} />
+      <Route path="/jobs/emirate" element={<EmirateJobsList />} />
+      <Route path="/jobs/emirate/:slug" element={<EmirateJobs />} />
+      <Route path="/sitemap" element={<Sitemap />} />
+      <Route path="/cookies" element={<Cookies />} />
 
       <Route
         path="/post-job"

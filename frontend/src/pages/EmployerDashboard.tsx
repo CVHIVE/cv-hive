@@ -704,7 +704,11 @@ export default function EmployerDashboard() {
                     )}
                   </div>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p>Contact Reveals: {subscription.plan_type === 'DEMO' ? 'Upgrade to reveal contacts' : `${subscription.contact_reveals_used} / ${subscription.contact_reveals_limit === -1 ? 'Unlimited' : subscription.contact_reveals_limit}`}</p>
+                    <p>Contact Reveals: {subscription.plan_type === 'DEMO' ? 'Upgrade to reveal contacts' : `${subscription.contact_reveals_used} / ${subscription.contact_reveals_limit}`}</p>
+                    <p className="text-xs text-gray-400">
+                      {subscription.plan_type === 'PROFESSIONAL' && 'Up to 100 reveals per month'}
+                      {subscription.plan_type === 'ENTERPRISE' && 'Up to 500 reveals per month'}
+                    </p>
                     {subscription.current_period_end && (
                       <p>Current period ends: {new Date(subscription.current_period_end).toLocaleDateString()}</p>
                     )}
@@ -715,10 +719,14 @@ export default function EmployerDashboard() {
                     <div className="mt-4">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-primary h-2 rounded-full"
+                          className={`h-2 rounded-full ${
+                            (subscription.contact_reveals_used / subscription.contact_reveals_limit) >= 0.9 ? 'bg-red-500' :
+                            (subscription.contact_reveals_used / subscription.contact_reveals_limit) >= 0.7 ? 'bg-yellow-500' : 'bg-primary'
+                          }`}
                           style={{ width: `${Math.min(100, (subscription.contact_reveals_used / subscription.contact_reveals_limit) * 100)}%` }}
                         />
                       </div>
+                      <p className="text-xs text-gray-400 mt-1">{subscription.contact_reveals_limit - subscription.contact_reveals_used} reveals remaining</p>
                     </div>
                   )}
                 </div>
